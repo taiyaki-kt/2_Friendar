@@ -1,0 +1,123 @@
+
+<!doctype html>
+<html lang="ja">
+<head>
+  <!-- ページ設定を書く場所 -->
+  <meta charset="utf-8">
+  <!-- スマホでも画面幅に合わせて自然な大きさで表示するための設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- ブラウザのタブ名表示 -->
+  <title>シンプルメモアプリ</title>
+  <!-- CSSとJavascriptを読み込み -->
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+
+<!-- class="site-header"などをCSS側で探し、色やサイズなどを変更する -->
+<!-- id="appTitle"などをJavascriptで探し、操作する -->
+<!-- <h1>はページ内で最上位の見出し。見た目はCSSで変更できる -->
+<!-- 見出しには<h1>, <h2>, <h3>のような段階がある -->
+<!--
+HTMLの基本タグ
+<header>  ページ上部
+<main>    ページの主要部分
+<aside>   補助的な内容
+<section> 内容のまとまり
+<div>     要素をまとめる箱
+<p>       文章の段落
+<span>    短い文字や文章の一部分
+<input>   1行の入力欄
+<textarea>複数行の入力欄
+<button>  押せるボタン
+<ul>      順序のない箇条書き
+<ol>      番号付きの箇条書き
+<li>      箇条書きの項目
+
+classは主にCSSで見た目を指定するために使う。
+idは主にJavaScriptから特定の要素を探すために使う。
+-->
+
+
+<!-- ここまでは呪文みたいなもの -->
+<!-- ここから画面上に表示される内容 -->
+
+<body>
+  <!-- ヘッダー部分 -->
+  <!-- ページやアプリの冒頭部分を表すタグ -->
+  <!-- アプリ名や説明文は、自分たちの企画に合わせて変更してください。 -->
+  <header class="site-header">
+    <p class="label">Note App Template</p>
+    <h1 id="appTitle">シンプルメモ</h1>
+    <p class="lead">
+      タイトルとメモを保存して、一覧に並べるWebアプリです。
+    </p>
+  </header>
+
+  <!-- mainはページの主要な内容を囲むタグ -->
+  <!-- mainは1ページに1つ -->
+  <main class="app-shell">
+    <!-- 保存したメモのカード -->
+    <!-- asideは補助的な内容を表す -->
+    <!-- CSSで左右に並べている -->
+    <!-- ↓panelとnote-sidebarの二つのクラスをつけている -->
+    <aside class="panel note-sidebar">
+      <div class="sidebar-head">
+        <div>
+          <p class="section-label">Memo List</p>
+          <h2>保存したメモ</h2>
+        </div>
+      </div>
+
+      <p id="noteCountText" class="support-message">メモはまだありません。</p>
+      <div id="noteList" class="note-list" aria-live="polite">
+        <!--　
+          保存したメモが↓の中に<article>で追加されていく
+        -->
+      </div>
+    </aside>
+
+    <!-- メモを書く場所のカード -->
+    <section class="panel editor-panel">
+      <div class="status-row">
+        <span id="statusBadge" class="status-badge">入力中</span>
+        <span id="saveMessage" class="support-message">タイトルとメモを書いて保存してください。</span>
+      </div>
+
+      <label class="field">
+        <span>タイトル</span>
+        <!-- idは、その要素をJavaScriptなどから特定するための名前 -->        <!-- type="text"は一行のテキスト入力であることを表す。typeはnumber, date, email, password, fileなどがある -->
+        <!-- placeholderは何も入力されていないときに薄く表示される例文 -->
+        <input id="titleInput" type="text" placeholder="例: 明日の持ち物">
+      </label>
+
+      <label class="field">
+        <span>メモ</span>
+        <!-- rows="12"は初期状態で12行分の高さを持たせる指定 -->
+        <textarea id="bodyInput" rows="12" placeholder="ここにメモの内容を書きます。"></textarea>
+      </label>
+
+      <!-- ボタンを横並びにする。CSSで設定 -->
+      <div class="control-row">
+        <button id="saveButton" class="button primary" type="button">保存</button>
+        <button id="clearButton" class="button" type="button">入力欄を空にする</button>
+      </div>
+
+      <div class="custom-area">
+        <h2>改造のヒント</h2>
+        <ul>
+          <li>アプリ名や説明文を変えると、テーマに合ったアプリになります。</li>
+          <li>保存する内容を変えると、勉強ログや持ち物メモにできます。</li>
+          <li>さらに発展させるなら、削除、タグ、検索などを追加できます。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="notice">
+    <p>
+      このテンプレートはブラウザのlocalStorageにデータを保存します。
+      同じブラウザでは再読み込みしてもメモが残りますが、別の端末とは共有されません。
+    </p>
+  </footer>
+</body>
+</html>
