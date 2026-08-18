@@ -1,3 +1,24 @@
-.aaa{
-    color: aqua;
+body{
+    background-color: black;
+}
+#gradation {
+  background-image: linear-gradient(90deg, #22f09f, #20efff);
+ 
+}
+.centor{
+  text-align: center;   
+}
+.section{
+    background-color: aliceblue;
+    height: 50%;
+    width: 90%;
+    border-radius: 16px;
+    padding: 30px;
+    border: 4px,solid,rgb(171, 201, 251);
+    margin : 2px;
+}
+.bigsection{
+    background-color: antiquewhite;
+    padding: 10px;
+    border-radius: 12px;
 }
