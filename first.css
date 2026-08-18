@@ -10,8 +10,7 @@ body{
 }
 .section{
     background-color: aliceblue;
-    height: 50%;
-    width: 90%;
+
     border-radius: 16px;
     padding: 30px;
     border: 4px,solid,rgb(171, 201, 251);
