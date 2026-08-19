@@ -9,6 +9,7 @@ import {
 import {
   getFirestore,
   doc,
+  getDoc,
   setDoc
 } from "firebase/firestore";
 
@@ -57,9 +58,89 @@ await setDoc(doc(db, "users", uid), {
 });
 
 console.log("ユーザー情報を保存しました！");
+console.log("are");
+document.getElementById("teamSection").style.display = "block";
+console.log("iketeruhazu")
     } catch (error) {
 
         console.error("登録失敗:", error);
+
+    }
+
+});
+const createTeamButton = document.getElementById("createTeamButton");
+createTeamButton.addEventListener("click", async () => {
+
+    try {
+
+        // 6文字のチームコードを作る
+        const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        let teamCode = "";
+
+        for (let i = 0; i < 6; i++) {
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            teamCode += characters[randomIndex];
+        }
+
+        console.log("チームコード:", teamCode);
+
+        // 現在ログインしているユーザーのUID
+        const user = auth.currentUser;
+
+        if (!user) {
+            console.error("ログインしているユーザーがいません");
+            return;
+        }
+
+        // Firestoreにチームを保存
+        await setDoc(doc(db, "teams", teamCode), {
+            owner: user.uid,
+            createdAt: new Date()
+        });
+
+        console.log("チーム作成成功！");
+        console.log("チームコード:", teamCode);
+
+    } catch (error) {
+
+        console.error("チーム作成失敗:", error);
+
+    }
+
+});
+const joinTeamButton = document.getElementById("joinTeamButton");
+joinTeamButton.addEventListener("click", async () => {
+
+    // 入力されたチームコードを取得
+    const teamCode = document.getElementById("teamCode").value.trim();
+
+    // コードが空なら終了
+    if (teamCode === "") {
+        console.log("チームコードを入力してください");
+        return;
+    }
+
+    try {
+
+        // Firestoreからチームを探す
+        const teamRef = doc(db, "teams", teamCode);
+        const teamSnapshot = await getDoc(teamRef);
+
+        // チームが存在するか確認
+        if (teamSnapshot.exists()) {
+
+            console.log("チームが見つかりました！");
+            console.log("チーム情報:", teamSnapshot.data());
+
+        } else {
+
+            console.log("チームが見つかりません");
+
+        }
+
+    } catch (error) {
+
+        console.error("チーム検索失敗:", error);
 
     }
 
