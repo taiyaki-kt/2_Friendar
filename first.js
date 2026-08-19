@@ -147,7 +147,7 @@ joinTeamButton.addEventListener("click", async () => {
 
     console.log("チームに参加しました！");
     console.log("あなたのUID:", user.uid);
-
+    window.location.href = "./calendar.html";
 } else {
 
     console.log("チームが見つかりません");
