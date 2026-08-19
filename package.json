@@ -1,0 +1,18 @@
+{
+  "name": "dope-calendar",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": { 
+     "dev": "vite"
+  },
+  "dependencies": {
+    "firebase": "^12.17.1"
+  },
+  "devDependencies": {
+    "vite": "^8.2.1"
+  }
+}
