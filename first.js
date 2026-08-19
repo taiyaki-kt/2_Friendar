@@ -101,6 +101,7 @@ loginButton.addEventListener("click", async () => {
     }
 
 });
+const teamId =document.getElementById("teamId");
 const createTeamButton = document.getElementById("createTeamButton");
 createTeamButton.addEventListener("click", async () => {
 
@@ -133,6 +134,7 @@ createTeamButton.addEventListener("click", async () => {
 
         console.log("チーム作成成功！");
         console.log("チームコード:", teamCode);
+        teamId.textContent = teamCode;
 
     } catch (error) {
 
@@ -141,6 +143,7 @@ createTeamButton.addEventListener("click", async () => {
     }
 
 });
+
 const joinTeamButton = document.getElementById("joinTeamButton");
 joinTeamButton.addEventListener("click", async () => {
 
