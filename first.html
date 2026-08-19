@@ -13,18 +13,66 @@
     <section class="bigsection">
     <section class="section"><div class="centor">一緒に充実した日々を過ごしましょう</div></section>
     <section class="section">
-        <h2 class="centor">ユーザー登録</h2>
-        
+<h2 class="centor">ユーザー登録</h2>
+
+<div class="centor">
+    <input type="text" id="username" placeholder="ユーザー名を入力">
+</div>
+
+<div class="centor">
+    <input type="email" id="email" placeholder="メールアドレスを入力">
+</div>
+
+<div class="centor">
+    <input type="password" id="password" placeholder="パスワードを入力(6文字以上)">
+</div>
+
+<div class="centor">
+    <button id="registerButton">ユーザー登録</button>
+</div>
+    </section>
+<section class="section">
+
+    <h2 class="centor">ログイン</h2>
+
     <div class="centor">
-         <input type="text" class="centor" placeholder="ユーザー名を入力">
-    </div>  
-    </section>
-  
-    <h2>チームを作る</h2>
-    <p>チームに参加</p>
-    <input type="text" class="centor" placeholder="チームコードを入力">
-    </section>
-    <script type="text/javascript" src="first.js"></script>
+        <input type="email" id="loginEmail" placeholder="メールアドレス">
+    </div>
+
+    <div class="centor">
+        <input type="password" id="loginPassword" placeholder="パスワード">
+    </div>
+
+    <div class="centor">
+        <button id="loginButton">ログイン</button>
+    </div>
+
+</section>
+<section id="teamSection" style="display: none;">
+
+    <h2 class="centor">チーム</h2>
+
+    <div class="centor">
+        <div>あなたのチームIDは<span id="teamId">???</span></div>
+        <button id="createTeamButton">チームを作る</button>
+    </div>
+
+    <div class="centor">
+        <input type="text" id="teamCode" placeholder="チームコードを入力" >
+    </div>
+
+    <div class="centor">
+        <button id="joinTeamButton">チームに参加</button>
+    </div>
+
+</section>
+</section>
+
+
+
+
+
+    <script type="module" src="./first.js"></script>
 
 </body>
 </html>
