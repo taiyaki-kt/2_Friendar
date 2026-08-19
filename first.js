@@ -69,6 +69,38 @@ console.log("iketeruhazu")
     }
 
 });
+const loginButton = document.getElementById("loginButton");
+
+loginButton.addEventListener("click", async () => {
+
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
+
+    try {
+
+        const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        console.log("ログイン成功！");
+
+        const user = userCredential.user;
+
+        console.log("ユーザーID:", user.uid);
+        console.log("メールアドレス:", user.email);
+
+        // チーム画面を表示
+        document.getElementById("teamSection").style.display = "block";
+
+    } catch (error) {
+
+        console.error("ログイン失敗:", error);
+
+    }
+
+});
 const createTeamButton = document.getElementById("createTeamButton");
 createTeamButton.addEventListener("click", async () => {
 
