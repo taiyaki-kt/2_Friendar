@@ -10,7 +10,8 @@ import {
   getFirestore,
   doc,
   getDoc,
-  setDoc
+  setDoc,
+  arrayUnion
 } from "firebase/firestore";
 
 // Firebaseの設定
@@ -127,16 +128,31 @@ joinTeamButton.addEventListener("click", async () => {
         const teamSnapshot = await getDoc(teamRef);
 
         // チームが存在するか確認
-        if (teamSnapshot.exists()) {
+       if (teamSnapshot.exists()) {
 
-            console.log("チームが見つかりました！");
-            console.log("チーム情報:", teamSnapshot.data());
+    console.log("チームが見つかりました！");
 
-        } else {
+    // 現在ログインしているユーザーを取得
+    const user = auth.currentUser;
 
-            console.log("チームが見つかりません");
+    if (!user) {
+        console.log("ログインしているユーザーがいません");
+        return;
+    }
 
-        }
+    // チームに自分のUIDを追加
+    await setDoc(teamRef, {
+        members: arrayUnion(user.uid)
+    }, { merge: true });
+
+    console.log("チームに参加しました！");
+    console.log("あなたのUID:", user.uid);
+
+} else {
+
+    console.log("チームが見つかりません");
+
+}
 
     } catch (error) {
 
