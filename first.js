@@ -6,6 +6,11 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
 } from "firebase/auth";
+import {
+  getFirestore,
+  doc,
+  setDoc
+} from "firebase/firestore";
 
 // Firebaseの設定
 const firebaseConfig = {
@@ -24,5 +29,38 @@ const app = initializeApp(firebaseConfig);
 
 // 認証機能
 const auth = getAuth(app);
-
+const db = getFirestore(app);
 console.log("Firebase connected!");
+const registerButton = document.getElementById("registerButton");
+
+registerButton.addEventListener("click", async () => {
+
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+
+        const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+        );
+
+        console.log("登録成功！");
+
+const uid = userCredential.user.uid;
+
+await setDoc(doc(db, "users", uid), {
+    username: username,
+    email: email
+});
+
+console.log("ユーザー情報を保存しました！");
+    } catch (error) {
+
+        console.error("登録失敗:", error);
+
+    }
+
+});

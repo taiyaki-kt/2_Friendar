@@ -6,8 +6,8 @@
   "author": "",
   "type": "commonjs",
   "main": "index.js",
-  "scripts": { 
-     "dev": "vite"
+  "scripts": {
+    "dev": "vite"
   },
   "dependencies": {
     "firebase": "^12.17.1"
