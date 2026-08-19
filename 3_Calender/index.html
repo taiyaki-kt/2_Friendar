@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar App Sample</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <h1>グループ名</h1>
+    <p>さあ、計画を立てよう！</p>
+  </header>
+
+  <main class="app">
+    <section class="card calendar-card">
+      <div class="calendar-toolbar">
+        <button id="prevMonthButton" class="icon-button" aria-label="前の月">←</button>
+
+        <div class="calendar-title">
+          <p class="eyebrow">CALENDAR</p>
+          <h2 id="monthTitle"></h2>
+        </div>
+
+        <button id="nextMonthButton" class="icon-button" aria-label="次の月">→</button>
+      </div>
+
+      <div class="weekday-row">
+        <div class="sunday">日</div>
+        <div>月</div>
+        <div>火</div>
+        <div>水</div>
+        <div>木</div>
+        <div>金</div>
+        <div class="saturday">土</div>
+      </div>
+
+      <div id="calendarGrid" class="calendar-grid"></div>
+
+      <div class="calendar-actions">
+        <button id="todayButton" class="secondary-button">今日に戻る</button>
+      </div>
+    </section>
+
+    <section class="card schedule-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SCHEDULE</p>
+          <h2 id="selectedDateTitle">日付を選択してください</h2>
+        </div>
+        <span id="scheduleCount" class="status-badge">0件</span>
+      </div>
+
+      <div class="schedule-form">
+       <div class="schedule-form" style="grid-template-columns: auto 1fr auto auto;">
+  <!-- 教科選択 -->
+  <select id="subjectSelect" disabled>
+    <option value="英語">英語</option>
+    <option value="数学">数学</option>
+    <option value="国語">国語</option>
+    <option value="理科">理科</option>
+    <option value="社会">社会</option>
+    <option value="その他">その他</option>
+  </select>
+
+  <!-- 勉強内容 -->
+  <input
+    id="scheduleInput"
+    type="text"
+    placeholder="例: ワーク P.10〜15"
+    disabled
+  >
+
+  <!-- 目標時間 -->
+  <input
+    id="studyTimeInput"
+    type="text"
+    placeholder="時間(例: 1時間)"
+    style="width: 100px;"
+    disabled
+  >
+
+  <button id="addScheduleButton" class="primary-button" disabled>追加</button>
+</div>
+</div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
