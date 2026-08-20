@@ -329,6 +329,10 @@ button {
   text-align: center;
 }
 
+.member-list{
+  padding: 14px;
+}
+
 @media (max-width: 850px) {
   .app {
     grid-template-columns: 1fr;
