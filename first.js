@@ -127,10 +127,19 @@ createTeamButton.addEventListener("click", async () => {
         }
 
         // Firestoreにチームを保存
-        await setDoc(doc(db, "teams", teamCode), {
-            owner: user.uid,
-            createdAt: new Date()
-        });
+await setDoc(doc(db, "teams", teamCode), {
+    owner: user.uid,
+    members: [user.uid],
+    createdAt: new Date()
+});
+
+await setDoc(
+    doc(db, "users", user.uid),
+    {
+        teamCode: teamCode
+    },
+    { merge: true }
+);
 
         console.log("チーム作成成功！");
         console.log("チームコード:", teamCode);
@@ -179,6 +188,13 @@ joinTeamButton.addEventListener("click", async () => {
     await setDoc(teamRef, {
         members: arrayUnion(user.uid)
     }, { merge: true });
+    await setDoc(
+    doc(db, "users", user.uid),
+    {
+        teamCode: teamCode
+    },
+    { merge: true }
+);
 
     console.log("チームに参加しました！");
     console.log("あなたのUID:", user.uid);

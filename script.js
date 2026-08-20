@@ -50,7 +50,7 @@ const today = new Date();
 let displayYear = today.getFullYear();
 let displayMonth = today.getMonth();
 let selectedDate = null;
-
+let currentTeamCode = null;
 const schedules = {};
 async function getMyTeamCode(user) {
 
@@ -221,26 +221,60 @@ function selectDate(year, month, day) {
   renderSchedules();
 }
 
-function addSchedule() {
-  if (!selectedDate) {
-    return;
-  }
+async function addSchedule() {
 
-  const text = elements.scheduleInput.value.trim();
+    if (!selectedDate) {
+        return;
+    }
 
-  if (!text) {
-    return;
-  }
+    if (!currentTeamCode) {
+        console.log("チームコードが取得できていません");
+        return;
+    }
 
-  if (!schedules[selectedDate]) {
-    schedules[selectedDate] = [];
-  }
+    const text = elements.scheduleInput.value.trim();
 
-  schedules[selectedDate].push(text);
-  elements.scheduleInput.value = "";
+    if (!text) {
+        return;
+    }
 
-  renderCalendar();
-  renderSchedules();
+    if (!schedules[selectedDate]) {
+        schedules[selectedDate] = [];
+    }
+
+    schedules[selectedDate].push(text);
+
+    elements.scheduleInput.value = "";
+
+    renderCalendar();
+    renderSchedules();
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            currentTeamCode,
+            "schedules",
+            "data"
+        );
+
+        await setDoc(
+            schedulesRef,
+            schedules,
+            { merge: true }
+        );
+
+        console.log("予定をFirebaseに保存しました！");
+
+    } catch (error) {
+
+        console.error(
+            "予定の保存に失敗:",
+            error
+        );
+
+    }
 }
 
 function renderSchedules() {
@@ -287,19 +321,51 @@ function renderSchedules() {
   });
 }
 
-function deleteSchedule(index) {
-  if (!selectedDate || !schedules[selectedDate]) {
-    return;
-  }
+async function deleteSchedule(index) {
 
-  schedules[selectedDate].splice(index, 1);
+    if (!selectedDate || !schedules[selectedDate]) {
+        return;
+    }
 
-  if (schedules[selectedDate].length === 0) {
-    delete schedules[selectedDate];
-  }
+    if (!currentTeamCode) {
+        console.log("チームコードが取得できていません");
+        return;
+    }
 
-  renderCalendar();
-  renderSchedules();
+    schedules[selectedDate].splice(index, 1);
+
+    if (schedules[selectedDate].length === 0) {
+        delete schedules[selectedDate];
+    }
+
+    renderCalendar();
+    renderSchedules();
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            currentTeamCode,
+            "schedules",
+            "data"
+        );
+
+        await setDoc(
+            schedulesRef,
+            schedules
+        );
+
+        console.log("予定をFirebaseから更新しました！");
+
+    } catch (error) {
+
+        console.error(
+            "予定の削除に失敗:",
+            error
+        );
+
+    }
 }
 
 function formatDateKey(year, month, day) {
@@ -362,14 +428,23 @@ async function loadSchedules(teamCode) {
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
-
         console.log("ログインしているユーザーがいません");
-
         return;
     }
 
     console.log("ログイン中のユーザー:", user.uid);
 
-    await loadSchedules();
+    const teamCode = await getMyTeamCode(user);
+
+    if (!teamCode) {
+        console.log("所属チームがありません");
+        return;
+    }
+
+    currentTeamCode = teamCode;
+
+    console.log("所属チーム:", currentTeamCode);
+
+    await loadSchedules(currentTeamCode);
 
 });
