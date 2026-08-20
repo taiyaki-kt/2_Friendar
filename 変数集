@@ -1,0 +1,81 @@
+| 変数               | 中身                      | 役割                |
+| ---------------- | ----------------------- | ----------------- |
+| `firebaseConfig` | Firebaseの設定             | Firebaseプロジェクトを指定 |
+| `app`            | Firebaseアプリ             | Firebaseの初期化結果    |
+| `auth`           | Firebase Authentication | ログイン・登録を管理        |
+| `db`             | Firestore               | データベースへのアクセス      |
+| `userCredential` | Firebaseの認証結果           | 登録・ログインしたユーザー情報   |
+| `user`           | 現在ログイン中のユーザー            | ユーザー情報を取得         |
+| `uid`            | ユーザー固有ID                | Firestoreのユーザーを識別 |
+| 変数         | 中身      | 例                 |
+| ---------- | ------- | ----------------- |
+| `username` | ユーザー名   | `"瑛佑"`            |
+| `email`    | メールアドレス | `"abc@gmail.com"` |
+| `password` | パスワード   | `"12345678"`      |
+| 変数                | 中身                    | 役割                  |
+| ----------------- | --------------------- | ------------------- |
+| `teamCode`        | チームコード                | チームを識別              |
+| `currentTeamCode` | 現在のチームコード             | カレンダーで使用するチームを識別    |
+| `teamId`          | HTMLの要素               | チームコードを画面に表示        |
+| `teamRef`         | Firestoreのチームへの参照     | `teams/teamCode`を指定 |
+| `teamSnapshot`    | Firestoreから取得したチームデータ | チームが存在するか確認         |
+| 変数             | 中身      | 役割             |
+| -------------- | ------- | -------------- |
+| `today`        | 今日の日付   | 現在の日付          |
+| `displayYear`  | 表示している年 | 2026など         |
+| `displayMonth` | 表示している月 | 0～11           |
+| `selectedDate` | 選択中の日付  | `"2026-08-20"` |
+| `schedules`    | 予定データ   | 日付ごとの予定を保存     |
+| 変数                  | 対応するHTML            | 役割          |
+| ------------------- | ------------------- | ----------- |
+| `monthTitle`        | `monthTitle`        | 「2026年8月」など |
+| `calendarGrid`      | `calendarGrid`      | カレンダー本体     |
+| `prevMonthButton`   | `prevMonthButton`   | 前月ボタン       |
+| `nextMonthButton`   | `nextMonthButton`   | 次月ボタン       |
+| `todayButton`       | `todayButton`       | 今日に戻るボタン    |
+| `selectedDateTitle` | `selectedDateTitle` | 選択した日付      |
+| `scheduleCount`     | `scheduleCount`     | 予定の件数       |
+| `scheduleInput`     | `scheduleInput`     | 予定入力欄       |
+| `addScheduleButton` | `addScheduleButton` | 予定追加ボタン     |
+| `scheduleList`      | `scheduleList`      | 予定一覧        |
+| 変数             | 役割                            |
+| -------------- | ----------------------------- |
+| `userRef`      | `users/UID`への参照               |
+| `snapshot`     | Firestoreから取得したデータ            |
+| `userData`     | `snapshot.data()`で取得したユーザーデータ |
+| `schedulesRef` | チームの予定データへの参照                 |
+| `data`         | Firestoreから取得した予定データ          |
+| 変数              | 意味             |
+| --------------- | -------------- |
+| `firstDay`      | その月の1日         |
+| `startWeekday`  | 1日の曜日          |
+| `firstCellDate` | カレンダーの最初のセルの日付 |
+| `i`             | 42マスを数えるための番号  |
+| `date`          | 現在処理している日付     |
+| 変数             | 意味                  |
+| -------------- | ------------------- |
+| `button`       | 日付ボタン               |
+| `year`         | 年                   |
+| `month`        | 月                   |
+| `day`          | 日                   |
+| `weekday`      | 曜日                  |
+| `dateKey`      | `"2026-08-20"`形式の日付 |
+| `number`       | 日付番号のHTML要素         |
+| `daySchedules` | その日の予定              |
+| `dotRow`       | 予定の丸印部分             |
+| `dot`          | 予定の丸印               |
+| `preview`      | 予定のプレビュー            |
+renderSchedules()
+変数	意味
+items	選択日の予定一覧
+text	個々の予定
+index	予定の番号
+item	予定1個分のHTML
+scheduleText	予定文字列のHTML
+deleteButton	削除ボタン
+| 変数         | 意味                  |
+| ---------- | ------------------- |
+| `user`     | 現在ログインしているユーザー      |
+| `userRef`  | そのユーザーのFirestoreデータ |
+| `snapshot` | 取得結果                |
+| `userData` | ユーザーのデータ            |
