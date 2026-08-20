@@ -1,3 +1,36 @@
+import { initializeApp } from "firebase/app";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "firebase/auth";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc
+} from "firebase/firestore";
+// ========================================
+// Firebase設定
+// ========================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBb1MFjAYNHJpit7tCE6z7pIF7Wiz9CdRA",
+    authDomain: "friendar-4596d.firebaseapp.com",
+    projectId: "friendar-4596d",
+    storageBucket: "friendar-4596d.firebasestorage.app",
+    messagingSenderId: "480147429975",
+    appId: "1:480147429975:web:a106ebffc6e57e1b4ba112",
+    measurementId: "G-HJWDCTB70X"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+console.log("Firebase connected!");
 const elements = {
   monthTitle: document.getElementById("monthTitle"),
   calendarGrid: document.getElementById("calendarGrid"),
@@ -19,7 +52,34 @@ let displayMonth = today.getMonth();
 let selectedDate = null;
 
 const schedules = {};
+async function getMyTeamCode(user) {
 
+    const userRef = doc(
+        db,
+        "users",
+        user.uid
+    );
+
+    const snapshot = await getDoc(userRef);
+
+    if (!snapshot.exists()) {
+
+        console.error(
+            "ユーザー情報が見つかりません"
+        );
+
+        return null;
+    }
+
+    const userData = snapshot.data();
+
+    console.log(
+        "ユーザー情報:",
+        userData
+    );
+
+    return userData.teamCode;
+} 
 elements.prevMonthButton.addEventListener("click", () => {
   displayMonth--;
 
@@ -257,5 +317,59 @@ function isToday(date) {
     date.getDate() === today.getDate()
   );
 }
-
 renderCalendar();
+async function loadSchedules(teamCode) {
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            teamCode,
+            "schedules",
+            "data"
+        );
+
+        const snapshot = await getDoc(schedulesRef);
+
+        if (!snapshot.exists()) {
+            console.log("予定データはまだありません");
+            return;
+        }
+
+        const data = snapshot.data();
+
+        console.log("Firebaseから取得:", data);
+
+        Object.assign(schedules, data);
+
+        renderCalendar();
+
+        if (selectedDate) {
+            renderSchedules();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "予定の取得に失敗:",
+            error
+        );
+
+    }
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+
+        console.log("ログインしているユーザーがいません");
+
+        return;
+    }
+
+    console.log("ログイン中のユーザー:", user.uid);
+
+    await loadSchedules();
+
+});
