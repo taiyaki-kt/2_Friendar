@@ -384,6 +384,68 @@ function isToday(date) {
   );
 }
 renderCalendar();
+async function loadTeamMembers() {
+
+    if (!currentTeamCode) {
+        console.log("チームコードがありません");
+        return;
+    }
+
+    try {
+
+        // チーム情報を取得
+        const teamRef = doc(
+            db,
+            "teams",
+            currentTeamCode
+        );
+
+        const teamSnapshot = await getDoc(teamRef);
+
+        if (!teamSnapshot.exists()) {
+            console.log("チームが存在しません");
+            return;
+        }
+
+        // チームのデータ
+        const teamData = teamSnapshot.data();
+
+        // メンバーUID
+        const members = teamData.members || [];
+
+        console.log("メンバーUID:", members);
+
+        // ユーザー名を入れる配列
+        const memberNames = [];
+
+        for (const uid of members) {
+
+            const userRef = doc(
+                db,
+                "users",
+                uid
+            );
+
+            const userSnapshot = await getDoc(userRef);
+
+            if (userSnapshot.exists()) {
+
+                const userData = userSnapshot.data();
+
+                memberNames.push(userData.username);
+            }
+        }
+
+        console.log("メンバー名:", memberNames);
+
+    } catch (error) {
+
+        console.error(
+            "メンバー取得失敗:",
+            error
+        );
+    }
+}
 async function loadSchedules(teamCode) {
 
     try {
@@ -441,10 +503,14 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
-    currentTeamCode = teamCode;
+currentTeamCode = teamCode;
 
-    console.log("所属チーム:", currentTeamCode);
+console.log("所属チーム:", currentTeamCode);
 
-    await loadSchedules(currentTeamCode);
+// メンバー取得
+await loadTeamMembers();
+
+// 予定取得
+await loadSchedules(currentTeamCode);
 
 });
