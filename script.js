@@ -1,3 +1,36 @@
+import { initializeApp } from "firebase/app";
+
+import {
+    getAuth,
+    onAuthStateChanged
+} from "firebase/auth";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc
+} from "firebase/firestore";
+// ========================================
+// Firebase設定
+// ========================================
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBb1MFjAYNHJpit7tCE6z7pIF7Wiz9CdRA",
+    authDomain: "friendar-4596d.firebaseapp.com",
+    projectId: "friendar-4596d",
+    storageBucket: "friendar-4596d.firebasestorage.app",
+    messagingSenderId: "480147429975",
+    appId: "1:480147429975:web:a106ebffc6e57e1b4ba112",
+    measurementId: "G-HJWDCTB70X"
+};
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+console.log("Firebase connected!");
 const elements = {
   monthTitle: document.getElementById("monthTitle"),
   calendarGrid: document.getElementById("calendarGrid"),
@@ -17,9 +50,36 @@ const today = new Date();
 let displayYear = today.getFullYear();
 let displayMonth = today.getMonth();
 let selectedDate = null;
-
+let currentTeamCode = null;
 const schedules = {};
+async function getMyTeamCode(user) {
 
+    const userRef = doc(
+        db,
+        "users",
+        user.uid
+    );
+
+    const snapshot = await getDoc(userRef);
+
+    if (!snapshot.exists()) {
+
+        console.error(
+            "ユーザー情報が見つかりません"
+        );
+
+        return null;
+    }
+
+    const userData = snapshot.data();
+
+    console.log(
+        "ユーザー情報:",
+        userData
+    );
+
+    return userData.teamCode;
+} 
 elements.prevMonthButton.addEventListener("click", () => {
   displayMonth--;
 
@@ -161,26 +221,60 @@ function selectDate(year, month, day) {
   renderSchedules();
 }
 
-function addSchedule() {
-  if (!selectedDate) {
-    return;
-  }
+async function addSchedule() {
 
-  const text = elements.scheduleInput.value.trim();
+    if (!selectedDate) {
+        return;
+    }
 
-  if (!text) {
-    return;
-  }
+    if (!currentTeamCode) {
+        console.log("チームコードが取得できていません");
+        return;
+    }
 
-  if (!schedules[selectedDate]) {
-    schedules[selectedDate] = [];
-  }
+    const text = elements.scheduleInput.value.trim();
 
-  schedules[selectedDate].push(text);
-  elements.scheduleInput.value = "";
+    if (!text) {
+        return;
+    }
 
-  renderCalendar();
-  renderSchedules();
+    if (!schedules[selectedDate]) {
+        schedules[selectedDate] = [];
+    }
+
+    schedules[selectedDate].push(text);
+
+    elements.scheduleInput.value = "";
+
+    renderCalendar();
+    renderSchedules();
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            currentTeamCode,
+            "schedules",
+            "data"
+        );
+
+        await setDoc(
+            schedulesRef,
+            schedules,
+            { merge: true }
+        );
+
+        console.log("予定をFirebaseに保存しました！");
+
+    } catch (error) {
+
+        console.error(
+            "予定の保存に失敗:",
+            error
+        );
+
+    }
 }
 
 function renderSchedules() {
@@ -227,19 +321,51 @@ function renderSchedules() {
   });
 }
 
-function deleteSchedule(index) {
-  if (!selectedDate || !schedules[selectedDate]) {
-    return;
-  }
+async function deleteSchedule(index) {
 
-  schedules[selectedDate].splice(index, 1);
+    if (!selectedDate || !schedules[selectedDate]) {
+        return;
+    }
 
-  if (schedules[selectedDate].length === 0) {
-    delete schedules[selectedDate];
-  }
+    if (!currentTeamCode) {
+        console.log("チームコードが取得できていません");
+        return;
+    }
 
-  renderCalendar();
-  renderSchedules();
+    schedules[selectedDate].splice(index, 1);
+
+    if (schedules[selectedDate].length === 0) {
+        delete schedules[selectedDate];
+    }
+
+    renderCalendar();
+    renderSchedules();
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            currentTeamCode,
+            "schedules",
+            "data"
+        );
+
+        await setDoc(
+            schedulesRef,
+            schedules
+        );
+
+        console.log("予定をFirebaseから更新しました！");
+
+    } catch (error) {
+
+        console.error(
+            "予定の削除に失敗:",
+            error
+        );
+
+    }
 }
 
 function formatDateKey(year, month, day) {
@@ -257,5 +383,68 @@ function isToday(date) {
     date.getDate() === today.getDate()
   );
 }
-
 renderCalendar();
+async function loadSchedules(teamCode) {
+
+    try {
+
+        const schedulesRef = doc(
+            db,
+            "teams",
+            teamCode,
+            "schedules",
+            "data"
+        );
+
+        const snapshot = await getDoc(schedulesRef);
+
+        if (!snapshot.exists()) {
+            console.log("予定データはまだありません");
+            return;
+        }
+
+        const data = snapshot.data();
+
+        console.log("Firebaseから取得:", data);
+
+        Object.assign(schedules, data);
+
+        renderCalendar();
+
+        if (selectedDate) {
+            renderSchedules();
+        }
+
+    } catch (error) {
+
+        console.error(
+            "予定の取得に失敗:",
+            error
+        );
+
+    }
+}
+
+onAuthStateChanged(auth, async (user) => {
+
+    if (!user) {
+        console.log("ログインしているユーザーがいません");
+        return;
+    }
+
+    console.log("ログイン中のユーザー:", user.uid);
+
+    const teamCode = await getMyTeamCode(user);
+
+    if (!teamCode) {
+        console.log("所属チームがありません");
+        return;
+    }
+
+    currentTeamCode = teamCode;
+
+    console.log("所属チーム:", currentTeamCode);
+
+    await loadSchedules(currentTeamCode);
+
+});

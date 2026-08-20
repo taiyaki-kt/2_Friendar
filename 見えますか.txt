@@ -2,3 +2,29 @@
 firebaseを使ってアカウントが作れるようにしたのですが、
 開発者側はNODE.JSというものをダウンロードしないといけないようなので
 やってほしいです。書くのが面倒なのでみんないる時にやりましょう。
+【friendar 開発環境の準備】
+
+① VS Code、Node.js、GitHub Desktopを入れる
+
+② GitHub Desktopで共同制作のリポジトリをClone
+
+③ VS Codeで2_DOPECalendarフォルダを開く
+
+④ VS Codeのターミナルを開く
+
+⑤ 2_DOPECalendarに移動
+cd .\2_DOPECalendar
+
+⑥ package.jsonがあることを確認
+dir
+
+⑦ 初回だけ必要なライブラリをインストール
+npm install
+
+⑧ Viteを起動
+npm run dev
+
+⑨ ブラウザで開く
+http://localhost:5173/first.html
+
+これで開発できる！
