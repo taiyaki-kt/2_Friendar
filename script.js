@@ -40,10 +40,14 @@ const elements = {
   todayButton: document.getElementById("todayButton"),
 
   selectedDateTitle: document.getElementById("selectedDateTitle"),
+  setGoalDateButton: document.getElementById("setGoalDateButton"),
   scheduleCount: document.getElementById("scheduleCount"),
   scheduleInput: document.getElementById("scheduleInput"),
   addScheduleButton: document.getElementById("addScheduleButton"),
   scheduleList: document.getElementById("scheduleList"),
+  progressSummary: document.getElementById("progressSummary"),
+  completionRate: document.getElementById("completionRate"),
+  completionMeter: document.getElementById("completionMeter"),
   memberCount: document.getElementById("memberCount"),
   memberList: document.getElementById("memberList")
 };
@@ -54,6 +58,7 @@ let displayYear = today.getFullYear();
 let displayMonth = today.getMonth();
 let selectedDate = null;
 let currentTeamCode = null;
+let targetDate = null;
 const schedules = {};
 const onlineTimeoutMs = 2 * 60 * 1000;
 let onlineUpdateTimer = null;
@@ -116,6 +121,7 @@ elements.todayButton.addEventListener("click", () => {
 });
 
 elements.addScheduleButton.addEventListener("click", addSchedule);
+elements.setGoalDateButton.addEventListener("click", toggleGoalDate);
 
 elements.scheduleInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -179,6 +185,15 @@ function createDayButton(date) {
     button.classList.add("selected");
   }
 
+  if (targetDate === dateKey) {
+    button.classList.add("target-date");
+
+    const targetLabel = document.createElement("span");
+    targetLabel.className = "target-date-label";
+    targetLabel.textContent = "目標日";
+    button.appendChild(targetLabel);
+  }
+
   const number = document.createElement("span");
   number.className = "day-number";
   number.textContent = day;
@@ -200,7 +215,7 @@ function createDayButton(date) {
 
     const preview = document.createElement("div");
     preview.className = "schedule-preview";
-    preview.textContent = daySchedules[0];
+    preview.textContent = daySchedules[0].text;
     button.appendChild(preview);
   }
 
@@ -218,12 +233,38 @@ function selectDate(year, month, day) {
 
   elements.selectedDateTitle.textContent =
     `${year}年${month + 1}月${day}日`;
+  elements.setGoalDateButton.hidden = false;
+  updateGoalDateButton();
 
   elements.scheduleInput.disabled = false;
   elements.addScheduleButton.disabled = false;
 
   renderCalendar();
   renderSchedules();
+}
+
+function updateGoalDateButton() {
+  elements.setGoalDateButton.textContent = targetDate === selectedDate
+    ? "目標日を解除する"
+    : "目標日に設定する";
+}
+
+async function toggleGoalDate() {
+  if (!selectedDate || !currentTeamCode) {
+    return;
+  }
+
+  targetDate = targetDate === selectedDate ? null : selectedDate;
+  updateGoalDateButton();
+  renderCalendar();
+  updateCompletionRate();
+
+  try {
+    const schedulesRef = doc(db, "teams", currentTeamCode, "schedules", "data");
+    await setDoc(schedulesRef, { targetDate }, { merge: true });
+  } catch (error) {
+    console.error("目標日の保存に失敗:", error);
+  }
 }
 
 async function addSchedule() {
@@ -247,7 +288,10 @@ async function addSchedule() {
         schedules[selectedDate] = [];
     }
 
-    schedules[selectedDate].push(text);
+    schedules[selectedDate].push({
+      text,
+      completed: false
+    });
 
     elements.scheduleInput.value = "";
 
@@ -265,9 +309,9 @@ async function addSchedule() {
         );
 
         await setDoc(
-            schedulesRef,
-            schedules,
-            { merge: true }
+          schedulesRef,
+          { ...schedules, ...(targetDate ? { targetDate } : {}) },
+          { merge: true }
         );
 
         console.log("予定をFirebaseに保存しました！");
@@ -285,12 +329,14 @@ async function addSchedule() {
 function renderSchedules() {
   if (!selectedDate) {
     elements.scheduleCount.textContent = "0件";
+    updateCompletionRate();
     return;
   }
 
   const items = schedules[selectedDate] || [];
 
   elements.scheduleCount.textContent = `${items.length}件`;
+  updateCompletionRate();
   elements.scheduleList.innerHTML = "";
 
   if (items.length === 0) {
@@ -302,13 +348,25 @@ function renderSchedules() {
     return;
   }
 
-  items.forEach((text, index) => {
+  items.forEach((schedule, index) => {
     const item = document.createElement("div");
     item.className = "schedule-item";
+    if (schedule.completed) {
+      item.classList.add("completed");
+    }
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "schedule-checkbox";
+    checkbox.checked = schedule.completed;
+    checkbox.setAttribute("aria-label", `${schedule.text}の完了状態`);
+    checkbox.addEventListener("change", () => {
+      toggleSchedule(index);
+    });
 
     const scheduleText = document.createElement("span");
     scheduleText.className = "schedule-text";
-    scheduleText.textContent = text;
+    scheduleText.textContent = schedule.text;
 
     const deleteButton = document.createElement("button");
     deleteButton.className = "delete-button";
@@ -319,11 +377,59 @@ function renderSchedules() {
       deleteSchedule(index);
     });
 
+    item.appendChild(checkbox);
     item.appendChild(scheduleText);
     item.appendChild(deleteButton);
 
     elements.scheduleList.appendChild(item);
   });
+}
+
+function updateCompletionRate() {
+  const todayKey = formatDateKey(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+  const isVisible = targetDate && todayKey <= targetDate && selectedDate && selectedDate <= targetDate;
+
+  elements.progressSummary.hidden = !isVisible;
+
+  if (!isVisible) {
+    return;
+  }
+
+  const targetSchedules = Object.entries(schedules)
+    .filter(([dateKey, items]) => dateKey <= targetDate && Array.isArray(items))
+    .flatMap(([, items]) => items);
+  const completedCount = targetSchedules.filter((schedule) => schedule.completed).length;
+  const completionRate = targetSchedules.length === 0
+    ? 100
+    : Math.round((completedCount / targetSchedules.length) * 100);
+
+  elements.completionRate.textContent = `${completionRate}%`;
+  elements.completionMeter.style.width = `${completionRate}%`;
+  elements.completionMeter.parentElement.setAttribute("aria-valuenow", completionRate);
+}
+
+async function toggleSchedule(index) {
+  if (!selectedDate || !schedules[selectedDate]?.[index]) {
+    return;
+  }
+
+  schedules[selectedDate][index].completed = !schedules[selectedDate][index].completed;
+  renderCalendar();
+  renderSchedules();
+
+  try {
+    const schedulesRef = doc(db, "teams", currentTeamCode, "schedules", "data");
+    await setDoc(schedulesRef, {
+      ...schedules,
+      ...(targetDate ? { targetDate } : {})
+    });
+  } catch (error) {
+    console.error("予定の完了状態の保存に失敗:", error);
+  }
 }
 
 async function deleteSchedule(index) {
@@ -357,8 +463,8 @@ async function deleteSchedule(index) {
         );
 
         await setDoc(
-            schedulesRef,
-            schedules
+          schedulesRef,
+          { ...schedules, ...(targetDate ? { targetDate } : {}) }
         );
 
         console.log("予定をFirebaseから更新しました！");
@@ -412,7 +518,19 @@ async function loadSchedules(teamCode) {
 
         console.log("Firebaseから取得:", data);
 
-        Object.assign(schedules, data);
+        targetDate = typeof data.targetDate === "string" ? data.targetDate : null;
+
+        Object.entries(data).forEach(([dateKey, items]) => {
+          if (dateKey === "targetDate" || !Array.isArray(items)) {
+            return;
+          }
+
+          schedules[dateKey] = items.map((item) => (
+            typeof item === "string"
+              ? { text: item, completed: false }
+              : { text: item.text || "", completed: item.completed === true }
+          ));
+        });
 
         renderCalendar();
 

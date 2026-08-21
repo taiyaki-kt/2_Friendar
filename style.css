@@ -158,8 +158,20 @@ button {
   z-index: 1;
 }
 
+.calendar-day.target-date {
+  background: #fff6d8;
+}
+
 .day-number {
   font-size: 14px;
+  font-weight: bold;
+}
+
+.target-date-label {
+  display: block;
+  margin-top: 5px;
+  color: #8a6500;
+  font-size: 10px;
   font-weight: bold;
 }
 
@@ -253,6 +265,27 @@ button {
   font-size: 21px;
 }
 
+.selected-date-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.goal-date-button {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.goal-date-button:hover {
+  background: var(--soft);
+}
+
 .status-badge {
   padding: 6px 10px;
   border-radius: 999px;
@@ -285,6 +318,37 @@ button {
   background: #f0f2f4;
 }
 
+.progress-summary {
+  margin-top: 20px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progress-label strong {
+  color: var(--text);
+}
+
+.progress-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.progress-meter {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #218739;
+  transition: width 180ms ease;
+}
+
 .schedule-list {
   margin-top: 20px;
   display: grid;
@@ -293,13 +357,24 @@ button {
 
 .schedule-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: 10px;
   align-items: center;
   padding: 13px 14px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fafbfc;
+}
+
+.schedule-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #218739;
+}
+
+.schedule-item.completed .schedule-text {
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 .schedule-text {
