@@ -329,8 +329,29 @@ button {
   text-align: center;
 }
 
-.member-list{
-  padding: 14px;
+.members-card {
+  grid-column: 1 / -1;
+}
+
+.member-list {
+  margin-top: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--soft);
+}
+
+.member-item span {
+  color: var(--muted);
+  font-size: 13px;
 }
 
 @media (max-width: 850px) {

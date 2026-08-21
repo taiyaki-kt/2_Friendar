@@ -42,7 +42,9 @@ const elements = {
   scheduleCount: document.getElementById("scheduleCount"),
   scheduleInput: document.getElementById("scheduleInput"),
   addScheduleButton: document.getElementById("addScheduleButton"),
-  scheduleList: document.getElementById("scheduleList")
+  scheduleList: document.getElementById("scheduleList"),
+  memberCount: document.getElementById("memberCount"),
+  memberList: document.getElementById("memberList")
 };
 
 const today = new Date();
@@ -425,6 +427,66 @@ async function loadSchedules(teamCode) {
     }
 }
 
+async function loadMembers(teamCode) {
+  try {
+    const teamSnapshot = await getDoc(doc(db, "teams", teamCode));
+
+    if (!teamSnapshot.exists()) {
+      renderMembers([]);
+      return;
+    }
+
+    const memberIds = teamSnapshot.data().members || [];
+    const members = await Promise.all(
+      memberIds.map(async (uid) => {
+        const userSnapshot = await getDoc(doc(db, "users", uid));
+        const userData = userSnapshot.exists() ? userSnapshot.data() : {};
+
+        return {
+          username: userData.username || "名前未設定",
+          email: userData.email || ""
+        };
+      })
+    );
+
+    renderMembers(members);
+  } catch (error) {
+    console.error("メンバーの取得に失敗:", error);
+    elements.memberList.innerHTML = `
+      <div class="empty-schedule">メンバーを取得できませんでした。</div>
+    `;
+  }
+}
+
+function renderMembers(members) {
+  elements.memberCount.textContent = `${members.length}人`;
+  elements.memberList.innerHTML = "";
+
+  if (members.length === 0) {
+    elements.memberList.innerHTML = `
+      <div class="empty-schedule">メンバーがいません。</div>
+    `;
+    return;
+  }
+
+  members.forEach((member) => {
+    const item = document.createElement("div");
+    item.className = "member-item";
+
+    const name = document.createElement("strong");
+    name.textContent = member.username;
+    item.appendChild(name);
+
+    if (member.email) {
+      const email = document.createElement("span");
+      email.textContent = member.email;
+      item.appendChild(email);
+    }
+
+    elements.memberList.appendChild(item);
+  });
+}
+
 onAuthStateChanged(auth, async (user) => {
 
     if (!user) {
@@ -446,5 +508,6 @@ onAuthStateChanged(auth, async (user) => {
     console.log("所属チーム:", currentTeamCode);
 
     await loadSchedules(currentTeamCode);
+    await loadMembers(currentTeamCode);
 
 });
