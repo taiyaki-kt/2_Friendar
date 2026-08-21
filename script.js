@@ -9,7 +9,8 @@ import {
     getFirestore,
     doc,
     getDoc,
-    setDoc
+    setDoc,
+    serverTimestamp
 } from "firebase/firestore";
 // ========================================
 // Firebase設定
@@ -54,6 +55,8 @@ let displayMonth = today.getMonth();
 let selectedDate = null;
 let currentTeamCode = null;
 const schedules = {};
+const onlineTimeoutMs = 2 * 60 * 1000;
+let onlineUpdateTimer = null;
 async function getMyTeamCode(user) {
 
     const userRef = doc(
@@ -224,7 +227,7 @@ function selectDate(year, month, day) {
 }
 
 async function addSchedule() {
-
+    
     if (!selectedDate) {
         return;
     }
@@ -444,7 +447,8 @@ async function loadMembers(teamCode) {
 
         return {
           username: userData.username || "名前未設定",
-          email: userData.email || ""
+          email: userData.email || "",
+          lastActiveAt: userData.lastActiveAt || null
         };
       })
     );
@@ -477,14 +481,27 @@ function renderMembers(members) {
     name.textContent = member.username;
     item.appendChild(name);
 
-    if (member.email) {
-      const email = document.createElement("span");
-      email.textContent = member.email;
-      item.appendChild(email);
-    }
+    const status = document.createElement("span");
+    const lastActiveTime = member.lastActiveAt?.toMillis?.() || 0;
+    const isOnline = Date.now() - lastActiveTime < onlineTimeoutMs;
+    status.className = `member-status ${isOnline ? "online" : "offline"}`;
+    status.textContent = isOnline ? "オンライン" : "オフライン";
+    item.appendChild(status);
 
     elements.memberList.appendChild(item);
   });
+}
+
+async function updateMyOnlineStatus(user) {
+  try {
+    await setDoc(
+      doc(db, "users", user.uid),
+      { lastActiveAt: serverTimestamp() },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("オンライン状態の更新に失敗:", error);
+  }
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -507,7 +524,18 @@ onAuthStateChanged(auth, async (user) => {
 
     console.log("所属チーム:", currentTeamCode);
 
+    await updateMyOnlineStatus(user);
     await loadSchedules(currentTeamCode);
     await loadMembers(currentTeamCode);
+    const teamCodeElement = document.getElementById("teamCodeDayo");
+
+    if (teamCodeElement) {
+      teamCodeElement.textContent = currentTeamCode;
+    }
+
+    onlineUpdateTimer = setInterval(async () => {
+      await updateMyOnlineStatus(user);
+      await loadMembers(currentTeamCode);
+    }, 30000);
 
 });

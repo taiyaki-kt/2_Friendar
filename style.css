@@ -354,6 +354,29 @@ button {
   font-size: 13px;
 }
 
+.member-status {
+  margin-left: auto;
+  font-weight: bold;
+}
+
+.member-status::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.member-status.online {
+  color: #218739;
+}
+
+.member-status.offline {
+  color: var(--muted);
+}
+
 @media (max-width: 850px) {
   .app {
     grid-template-columns: 1fr;
@@ -392,5 +415,10 @@ button {
 
   .primary-button {
     width: 100%;
+  }
+
+  .member-item {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 }
