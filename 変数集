@@ -79,3 +79,27 @@ deleteButton	削除ボタン
 | `userRef`  | そのユーザーのFirestoreデータ |
 | `snapshot` | 取得結果                |
 | `userData` | ユーザーのデータ            |
+
+## JavaScriptの基本
+
+| 書き方 | 意味 | 例 |
+| --- | --- | --- |
+| `const` | 後から入れ替えない値を作る | `const name = "瑛佑";` |
+| `let` | 後から変更する値を作る | `let count = 0;` |
+| `=` | 値を代入する | `count = 1;` |
+| `===` | 値と種類が同じか比べる | `count === 1` |
+| `&&` | 「かつ」 | `user && teamCode` |
+| `||` | 「または」・予備の値 | `username || "名前未設定"` |
+| `!` | 条件を反対にする | `!user` |
+| `if` | 条件によって処理を分ける | `if (text) { ... }` |
+| `return` | 関数の処理を終えて値を返す | `return userData.username;` |
+
+## メンバー表示で使う変数
+
+| 変数 | 意味 |
+| --- | --- |
+| `memberIds` | チームに所属するユーザーUIDの配列 |
+| `members` | 表示用に整えたメンバー情報の配列 |
+| `member` | メンバー1人分の名前・メールアドレス |
+| `memberCount` | メンバー人数を表示するHTML要素 |
+| `memberList` | メンバー一覧を表示するHTML要素 |

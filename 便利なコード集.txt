@@ -1,0 +1,239 @@
+Friendar 便利なコード集
+========================
+
+このファイルのコードは、script.js や first.js の中で使える例です。
+使うときは、必要な部分だけコピーしてください。
+
+
+1. HTMLの要素を取得する
+------------------------
+
+HTMLに id="message" がある場合：
+
+const message = document.getElementById("message");
+
+文字を表示する：
+
+message.textContent = "こんにちは";
+
+HTMLを空にする：
+
+message.innerHTML = "";
+
+注意：ユーザーが入力した文字を表示するときは、innerHTMLではなく
+textContentを使うと安全です。
+
+
+2. ボタンを押したときに処理する
+--------------------------------
+
+const button = document.getElementById("myButton");
+
+button.addEventListener("click", () => {
+  console.log("ボタンが押されました");
+});
+
+HTML例：
+
+<button id="myButton">押す</button>
+
+
+3. 入力欄の値を取得する
+------------------------
+
+const input = document.getElementById("nameInput");
+const name = input.value.trim();
+
+if (name === "") {
+  console.log("名前を入力してください");
+  return;
+}
+
+入力欄を空にする：
+
+input.value = "";
+
+入力欄を使えなくする・戻す：
+
+input.disabled = true;
+input.disabled = false;
+
+
+4. 条件で処理を分ける
+----------------------
+
+if (user) {
+  console.log("ログイン中です");
+} else {
+  console.log("ログインしてください");
+}
+
+値がない場合の予備を用意する：
+
+const name = userData.username || "名前未設定";
+
+
+5. 配列を使う
+-------------
+
+const fruits = ["りんご", "みかん"];
+
+追加する：
+
+fruits.push("ぶどう");
+
+削除する：
+
+fruits.splice(0, 1);
+
+1個ずつ処理する：
+
+fruits.forEach((fruit, index) => {
+  console.log(index, fruit);
+});
+
+件数を調べる：
+
+console.log(fruits.length);
+
+
+6. HTMLをJavaScriptで作る
+--------------------------
+
+const item = document.createElement("div");
+item.className = "schedule-item";
+item.textContent = "勉強する";
+document.getElementById("scheduleList").appendChild(item);
+
+ボタンも作る：
+
+const deleteButton = document.createElement("button");
+deleteButton.textContent = "削除";
+deleteButton.addEventListener("click", () => {
+  item.remove();
+});
+item.appendChild(deleteButton);
+
+
+7. Firebaseから1つのデータを取得する
+--------------------------------------
+
+// 先頭で getDoc と doc を読み込んでおく
+import { doc, getDoc } from "firebase/firestore";
+
+const userRef = doc(db, "users", uid);
+const snapshot = await getDoc(userRef);
+
+if (snapshot.exists()) {
+  const userData = snapshot.data();
+  console.log(userData.username);
+} else {
+  console.log("データがありません");
+}
+
+
+8. Firebaseにデータを保存する
+------------------------------
+
+// 先頭で setDoc を読み込んでおく
+import { doc, setDoc } from "firebase/firestore";
+
+await setDoc(doc(db, "users", uid), {
+  username: "瑛佑",
+  email: "abc@example.com"
+});
+
+既存のデータを残して一部だけ更新する：
+
+await setDoc(
+  doc(db, "users", uid),
+  { teamCode: "ABC123" },
+  { merge: true }
+);
+
+
+9. Firebaseの配列に追加する
+----------------------------
+
+// 先頭で arrayUnion を読み込んでおく
+import { arrayUnion } from "firebase/firestore";
+
+await setDoc(
+  doc(db, "teams", teamCode),
+  { members: arrayUnion(uid) },
+  { merge: true }
+);
+
+同じUIDがすでにあっても、arrayUnionなら重複しにくくなります。
+
+
+10. ログを出して調べる
+-----------------------
+
+console.log("今のユーザー:", user);
+console.log("チームコード:", currentTeamCode);
+console.error("取得に失敗しました:", error);
+
+値が思った通りか分からないときは、処理の前後にconsole.logを置きます。
+ブラウザーで F12 キーを押し、「Console」を開くとログを確認できます。
+
+
+11. try-catchでエラーを処理する
+--------------------------------
+
+try {
+  const snapshot = await getDoc(doc(db, "users", uid));
+  console.log(snapshot.data());
+} catch (error) {
+  console.error("データ取得に失敗しました:", error);
+}
+
+Firebaseなど、失敗する可能性がある処理にはtry-catchを使います。
+
+
+12. 関数を作る
+--------------
+
+function greet(name) {
+  return `${name}さん、こんにちは`;
+}
+
+const message = greet("瑛佑");
+console.log(message);
+
+非同期処理の関数：
+
+async function loadUser(uid) {
+  const snapshot = await getDoc(doc(db, "users", uid));
+  return snapshot.exists() ? snapshot.data() : null;
+}
+
+
+13. 日付をYYYY-MM-DDにする
+--------------------------
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+const todayKey = formatDate(new Date());
+console.log(todayKey);
+
+注意：JavaScriptの月は0から始まります。0が1月、11が12月です。
+
+
+14. 追加した機能を確認する順番
+-------------------------------
+
+1. HTMLにidを追加する
+2. JavaScriptでgetElementByIdする
+3. ボタンにaddEventListenerを設定する
+4. console.logで入力値を確認する
+5. 画面にtextContentで表示する
+6. 最後にFirebaseへ保存する
+
+いきなりFirebaseへ保存せず、まず画面に正しい値が出るか確認すると、
+どこで問題が起きているか分かりやすくなります。
