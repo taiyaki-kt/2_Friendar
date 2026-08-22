@@ -38,6 +38,13 @@ button {
   border-bottom: 1px solid var(--line);
 }
 
+.header-top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
 .site-header h1 {
   margin: 0 0 8px;
   font-size: 30px;
@@ -56,6 +63,140 @@ button {
 
 .header-title-row .secondary-button {
   padding: 8px 13px;
+}
+
+.menu {
+  position: relative;
+}
+
+.menu-button {
+  padding: 9px 13px;
+  border-radius: 10px;
+  background: var(--soft);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  list-style: none;
+}
+
+.menu-button::-webkit-details-marker {
+  display: none;
+}
+
+.menu-button:hover,
+.menu[open] .menu-button {
+  background: #e2e6e9;
+}
+
+.menu-content {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 3;
+  min-width: 160px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  box-shadow: 0 10px 24px rgba(24, 31, 38, 0.12);
+}
+
+.menu-content a,
+.menu-content button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.menu-content a:hover,
+.menu-content button:hover {
+  background: var(--soft);
+}
+
+.calendar-menu-section {
+  padding: 0 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.calendar-menu-section summary {
+  display: block;
+  padding: 10px 6px;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  list-style: none;
+}
+
+.calendar-menu-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.calendar-menu-section summary::after {
+  content: "＋";
+  float: right;
+  color: var(--muted);
+}
+
+.calendar-menu-section[open] summary::after {
+  content: "−";
+}
+
+.calendar-menu-section summary:hover {
+  background: var(--soft);
+}
+
+.calendar-menu-list {
+  display: grid;
+  gap: 2px;
+  padding-bottom: 8px;
+  animation: menu-fade-in 180ms ease-out both;
+}
+
+.calendar-menu-list a,
+.calendar-menu-list span {
+  padding: 8px 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.calendar-menu-list a {
+  color: var(--text);
+}
+
+.calendar-menu-list a {
+  animation: menu-fade-in 180ms ease-out both;
+}
+
+.calendar-menu-list a:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.calendar-menu-list a:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.calendar-menu-list a.current-calendar {
+  background: var(--soft);
+  font-weight: bold;
+}
+
+@keyframes menu-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .app {

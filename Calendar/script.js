@@ -2,7 +2,8 @@ import { initializeApp } from "firebase/app";
 
 import {
     getAuth,
-    onAuthStateChanged
+  onAuthStateChanged,
+  signOut
 } from "firebase/auth";
 
 import {
@@ -48,6 +49,8 @@ const elements = {
   nextMonthButton: document.getElementById("nextMonthButton"),
   todayButton: document.getElementById("todayButton"),
   dragHint: document.getElementById("dragHint"),
+  calendarMenuList: document.getElementById("calendarMenuList"),
+  logoutButton: document.getElementById("logoutButton"),
 
   selectedDateTitle: document.getElementById("selectedDateTitle"),
   setGoalDateButton: document.getElementById("setGoalDateButton"),
@@ -112,6 +115,44 @@ async function getMyTeamCode(user) {
 
     return teamCodes[0] || null;
 } 
+
+async function renderCalendarMenu(user) {
+  const userSnapshot = await getDoc(doc(db, "users", user.uid));
+  const userData = userSnapshot.data() || {};
+  const teamCodes = Array.isArray(userData.teamCodes)
+    ? userData.teamCodes
+    : userData.teamCode
+      ? [userData.teamCode]
+      : [];
+
+  elements.calendarMenuList.innerHTML = "";
+
+  if (teamCodes.length === 0) {
+    const emptyMessage = document.createElement("span");
+    emptyMessage.textContent = "所属チームがありません";
+    elements.calendarMenuList.appendChild(emptyMessage);
+    return;
+  }
+
+  const teamEntries = await Promise.all(teamCodes.map(async (teamCode) => {
+    const teamSnapshot = await getDoc(doc(db, "teams", teamCode));
+    return {
+      code: teamCode,
+      name: teamSnapshot.data()?.name || teamCode
+    };
+  }));
+
+  teamEntries.forEach(({ code, name }) => {
+    const calendarLink = document.createElement("a");
+    calendarLink.href = `calendar.html?team=${encodeURIComponent(code)}`;
+    calendarLink.textContent = name;
+    calendarLink.title = `ID: ${code}`;
+    if (code === currentTeamCode) {
+      calendarLink.classList.add("current-calendar");
+    }
+    elements.calendarMenuList.appendChild(calendarLink);
+  });
+}
 elements.prevMonthButton.addEventListener("click", () => {
   displayMonth--;
 
@@ -148,6 +189,14 @@ elements.editTeamButton.addEventListener("click", openTeamEditDialog);
 elements.closeTeamEditButton.addEventListener("click", closeTeamEditDialog);
 elements.cancelTeamEditButton.addEventListener("click", closeTeamEditDialog);
 elements.teamEditForm.addEventListener("submit", saveTeamSettings);
+elements.logoutButton.addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.href = "../login/first.html";
+  } catch (error) {
+    console.error("ログアウトに失敗:", error);
+  }
+});
 
 function openTeamEditDialog() {
   elements.teamEditDialog.hidden = false;
@@ -818,6 +867,8 @@ onAuthStateChanged(auth, async (user) => {
     currentTeamCode = teamCode;
 
     console.log("所属チーム:", currentTeamCode);
+
+    await renderCalendarMenu(user);
 
     const teamSnapshot = await getDoc(doc(db, "teams", currentTeamCode));
     const teamData = teamSnapshot.data() || {};
