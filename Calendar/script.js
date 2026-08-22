@@ -52,6 +52,7 @@ const elements = {
   todayButton: document.getElementById("todayButton"),
   dragHint: document.getElementById("dragHint"),
   calendarMenuList: document.getElementById("calendarMenuList"),
+  studyRoomButton: document.getElementById("studyRoomButton"),
   myPageButton: document.getElementById("myPageButton"),
   logoutButton: document.getElementById("logoutButton"),
 
@@ -247,6 +248,10 @@ elements.setGoalDateButton.addEventListener("click", toggleGoalDate);
   elements.editTeamButton?.addEventListener("click", openTeamEditDialog);
   elements.cancelTeamEditButton?.addEventListener("click", closeTeamEditDialog);
   elements.teamEditForm?.addEventListener("submit", saveTeamSettings);
+  elements.studyRoomButton?.addEventListener("click", () => {
+    const encodedTeamCode = encodeURIComponent(currentTeamCode || "default");
+    window.location.href = `../studyroom/studyroom.html?room=${encodedTeamCode}`;
+  });
   elements.myPageButton?.addEventListener("click", () => {
     window.location.href = "../mypage/mypage.html";
   });

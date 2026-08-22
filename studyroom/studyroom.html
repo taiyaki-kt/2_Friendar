@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>オンライン自習室</title>
+    <link rel="stylesheet" href="studyroom.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-top-row">
+            <div>
+                <div class="header-title-row">
+                    <h1>オンライン自習室</h1>
+                </div>
+                <h2>ルームID: <span id="roomCode">roomCode</span></h2>
+            </div>
+
+            <details class="menu">
+                <summary class="menu-button">メニュー</summary>
+                <div class="menu-content">
+                    <button id="backButton" type="button">カレンダーに戻る</button>
+                    <button id="logoutButton" type="button">ログアウト</button>
+                </div>
+            </details>
+        </div>
+    </header>
+
+    <main class="app">
+        <!-- タイマー・ポモドーロセクション -->
+        <section class="card timer-card">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">TIMER</p>
+                    <h2>ポモドーロタイマー</h2>
+                </div>
+            </div>
+
+            <div class="timer-container">
+                <div class="timer-display">
+                    <div class="timer-value" id="timerDisplay">25:00</div>
+                    <div class="timer-label" id="timerLabel">勉強中</div>
+                </div>
+
+                <div class="timer-controls">
+                    <button id="startButton" class="primary-button">開始</button>
+                    <button id="pauseButton" class="secondary-button" disabled>一時停止</button>
+                    <button id="resetButton" class="secondary-button">リセット</button>
+                </div>
+
+                <div class="timer-mode">
+                    <label>
+                        <input type="radio" name="timerMode" value="work" checked> 勉強 (25分)
+                    </label>
+                    <label>
+                        <input type="radio" name="timerMode" value="break"> 休憩 (5分)
+                    </label>
+                    <label>
+                        <input type="radio" name="timerMode" value="longBreak"> 長休憩 (15分)
+                    </label>
+                </div>
+
+                <div class="pomodoro-stats">
+                    <div class="stat">
+                        <span class="stat-label">今日のセッション数</span>
+                        <span class="stat-value" id="sessionCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">本日の勉強時間</span>
+                        <span class="stat-value" id="totalTimeToday">0分</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 参加者リストセクション -->
+        <section class="card members-card">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">MEMBERS</p>
+                    <h2>参加者</h2>
+                </div>
+                <span class="status-badge" id="memberCount">0人</span>
+            </div>
+
+            <div id="memberList" class="member-list">
+                <div class="empty-message">メンバーを読み込んでいます。</div>
+            </div>
+        </section>
+
+        <!-- チャットセクション -->
+        <section class="card chat-card">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">CHAT</p>
+                    <h2>チャット</h2>
+                </div>
+            </div>
+
+            <div id="chatMessages" class="chat-messages">
+                <div class="empty-message">チャットはまだありません</div>
+            </div>
+
+            <div class="chat-form">
+                <input
+                    id="chatInput"
+                    type="text"
+                    placeholder="メッセージを入力"
+                    disabled
+                >
+                <button id="sendButton" class="primary-button" disabled>送信</button>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="studyroom.js"></script>
+</body>
+</html>
