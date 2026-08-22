@@ -200,10 +200,10 @@ button {
 }
 
 .app {
-  width: min(1100px, calc(100% - 32px));
+  width: min(1400px, calc(100% - 32px));
   margin: 26px auto 48px;
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
   gap: 22px;
   align-items: start;
 }
@@ -527,12 +527,14 @@ button {
 
 .schedule-form {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 170px) minmax(0, 180px) auto;
   gap: 10px;
   margin-top: 20px;
 }
 
-.schedule-form input {
+.schedule-form input,
+.schedule-form select {
+  min-width: 0;
   width: 100%;
   padding: 11px 12px;
   border: 1px solid #cfd6dc;
@@ -540,12 +542,27 @@ button {
   outline: none;
 }
 
-.schedule-form input:focus {
+.schedule-form input:focus,
+.schedule-form select:focus {
   border-color: #717981;
 }
 
-.schedule-form input:disabled {
+.schedule-form input:disabled,
+.schedule-form select:disabled {
   background: #f0f2f4;
+}
+
+.schedule-option {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.schedule-option select {
+  min-height: 43px;
 }
 
 .progress-summary {
@@ -618,6 +635,17 @@ button {
 
 .schedule-text {
   overflow-wrap: anywhere;
+}
+
+.schedule-notification {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.schedule-item .delete-button {
+  grid-column: 3;
+  grid-row: 1 / span 2;
 }
 
 .delete-button {

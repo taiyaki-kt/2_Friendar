@@ -10,27 +10,25 @@
 <body>
   <header class="site-header">
     <div class="header-top-row">
-      <div class="header-title-row">
-        <h1 id="teamNameTitle">Calendar App</h1>
-        <button id="editTeamButton" class="secondary-button" type="button" hidden>編集</button>
+      <div>
+        <div class="header-title-row">
+          <h1 id="teamNameTitle">Calendar App</h1>
+          <button id="editTeamButton" class="secondary-button" type="button" hidden>チーム情報を編集</button>
+        </div>
+        <h2>チームID <span id="teamCodeDayo">teamCode</span></h2>
       </div>
+
       <details class="menu">
-        <summary class="menu-button" aria-label="メニュー">メニュー</summary>
+        <summary class="menu-button">メニュー</summary>
         <div class="menu-content">
           <details class="calendar-menu-section">
-            <summary>カレンダー</summary>
-            <div id="calendarMenuList" class="calendar-menu-list">
-              <span>読み込み中...</span>
-            </div>
+            <summary>カレンダーを切り替え</summary>
+            <div id="calendarMenuList" class="calendar-menu-list"></div>
           </details>
-          <a href="../mypage/mypage.html">マイページへ</a>
           <button id="logoutButton" type="button">ログアウト</button>
         </div>
       </details>
     </div>
-    <h2>チームID　<span id="teamCodeDayo">
-      teamCode
-    </span></h2>
     <p>月表示のカレンダーと、日付ごとの簡単な予定管理を行うサンプルです。</p>
   </header>
 
@@ -57,9 +55,9 @@
         <div class="saturday">土</div>
       </div>
 
-      <p id="dragHint" class="drag-hint" hidden>
-        移動先の日付を選択して、ドロップしてください。
-      </p>
+      <div id="dragHint" class="drag-hint" hidden>
+        予定を別の日付へドラッグして移動できます。
+      </div>
 
       <div id="calendarGrid" class="calendar-grid"></div>
 
@@ -67,29 +65,6 @@
         <button id="todayButton" class="secondary-button">今日に戻る</button>
       </div>
     </section>
-
-    <div id="teamEditDialog" class="dialog-backdrop" hidden>
-      <section class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="teamEditTitle">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">TEAM SETTINGS</p>
-            <h2 id="teamEditTitle">チーム情報を編集</h2>
-          </div>
-          <button id="closeTeamEditButton" class="icon-button" type="button" aria-label="閉じる">×</button>
-        </div>
-        <form id="teamEditForm" class="edit-form">
-          <label for="teamNameInput">チーム名</label>
-          <input id="teamNameInput" type="text" maxlength="50" required>
-          <label for="memberNameInput">自分のチーム内での名前</label>
-          <input id="memberNameInput" type="text" maxlength="30" required>
-          <p id="teamEditMessage" class="dialog-message" role="status"></p>
-          <div class="dialog-actions">
-            <button id="cancelTeamEditButton" class="secondary-button" type="button">キャンセル</button>
-            <button class="primary-button" type="submit">保存</button>
-          </div>
-        </form>
-      </section>
-    </div>
 
     <section class="card schedule-card">
       <div class="section-heading">
@@ -110,6 +85,19 @@
           placeholder="予定を入力"
           disabled
         >
+
+        <label class="schedule-option">
+          通知日時
+          <input id="notificationDateTime" type="datetime-local" disabled>
+        </label>
+
+        <label class="schedule-option">
+          通知先
+          <select id="notificationMembers" multiple disabled>
+            <option value="">メンバーを読み込み中...</option>
+          </select>
+        </label>
+
         <button id="addScheduleButton" class="primary-button" disabled>追加</button>
       </div>
 
@@ -144,7 +132,27 @@
       </div>
     </section>
 
-    
+  </main>
+
+  <div id="teamEditDialog" class="dialog-backdrop" hidden>
+    <section class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="teamEditTitle">
+      <h2 id="teamEditTitle">チーム情報を編集</h2>
+      <form id="teamEditForm" class="edit-form">
+        <label for="teamNameInput">チーム名</label>
+        <input id="teamNameInput" type="text" required>
+
+        <label for="memberNameInput">自分の表示名</label>
+        <input id="memberNameInput" type="text" required>
+
+        <p id="teamEditMessage" class="dialog-message" aria-live="polite"></p>
+        <div class="dialog-actions">
+          <button id="cancelTeamEditButton" class="secondary-button" type="button">キャンセル</button>
+          <button id="closeTeamEditButton" class="secondary-button" type="button" aria-label="編集画面を閉じる">閉じる</button>
+          <button class="primary-button" type="submit">保存</button>
+        </div>
+      </form>
+    </section>
+  </div>
 
   <script type="module" src="script.js"></script>
 </body>

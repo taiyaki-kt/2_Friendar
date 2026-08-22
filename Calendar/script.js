@@ -13,6 +13,7 @@ import {
     setDoc,
     serverTimestamp
 } from "firebase/firestore";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 // ========================================
 // Firebase設定
 // ========================================
@@ -31,6 +32,8 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
+const messaging = getMessaging(app);
+const firebaseVapidKey = "BK_HgHQ_BxJeTM4vsRlv0nbbtZav1hBOS8DbKyfSj-gFCw5kSIHUD2_j_4l4_7kZRoji-Y8rl3SnmIf7q0U8OWo";
 
 console.log("Firebase connected!");
 const elements = {
@@ -56,6 +59,8 @@ const elements = {
   setGoalDateButton: document.getElementById("setGoalDateButton"),
   scheduleCount: document.getElementById("scheduleCount"),
   scheduleInput: document.getElementById("scheduleInput"),
+  notificationDateTime: document.getElementById("notificationDateTime"),
+  notificationMembers: document.getElementById("notificationMembers"),
   addScheduleButton: document.getElementById("addScheduleButton"),
   scheduleList: document.getElementById("scheduleList"),
   progressSummary: document.getElementById("progressSummary"),
@@ -76,6 +81,56 @@ let targetDate = null;
 const schedules = {};
 const onlineTimeoutMs = 2 * 60 * 1000;
 let onlineUpdateTimer = null;
+const notifiedScheduleKeys = new Set();
+const memberNamesById = {};
+
+async function registerPushNotifications(user) {
+  if (
+    !("Notification" in window)
+    || !("serviceWorker" in navigator)
+    || Notification.permission === "denied"
+  ) {
+    return;
+  }
+
+  try {
+    const permission = Notification.permission === "default"
+      ? await Notification.requestPermission()
+      : Notification.permission;
+
+    if (permission !== "granted") {
+      return;
+    }
+
+    const registration = await navigator.serviceWorker.register("firebase-messaging-sw.js");
+    const token = await getToken(messaging, {
+      vapidKey: firebaseVapidKey,
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      return;
+    }
+
+    await setDoc(
+      doc(db, "users", user.uid, "fcmTokens", encodeURIComponent(token)),
+      { token, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+    console.log("プッシュ通知の端末登録が完了しました");
+  } catch (error) {
+    console.error("プッシュ通知の登録に失敗:", error);
+  }
+}
+
+onMessage(messaging, (payload) => {
+  if (Notification.permission === "granted") {
+    new Notification(
+      payload.notification?.title || "予定の通知",
+      { body: payload.notification?.body || "予定の時間になりました。" }
+    );
+  }
+});
 async function getMyTeamCode(user) {
 
     const userRef = doc(
@@ -117,6 +172,10 @@ async function getMyTeamCode(user) {
 } 
 
 async function renderCalendarMenu(user) {
+  if (!elements.calendarMenuList) {
+    return;
+  }
+
   const userSnapshot = await getDoc(doc(db, "users", user.uid));
   const userData = userSnapshot.data() || {};
   const teamCodes = Array.isArray(userData.teamCodes)
@@ -185,11 +244,11 @@ elements.todayButton.addEventListener("click", () => {
 
 elements.addScheduleButton.addEventListener("click", addSchedule);
 elements.setGoalDateButton.addEventListener("click", toggleGoalDate);
-elements.editTeamButton.addEventListener("click", openTeamEditDialog);
-elements.closeTeamEditButton.addEventListener("click", closeTeamEditDialog);
-elements.cancelTeamEditButton.addEventListener("click", closeTeamEditDialog);
-elements.teamEditForm.addEventListener("submit", saveTeamSettings);
-elements.logoutButton.addEventListener("click", async () => {
+  elements.editTeamButton?.addEventListener("click", openTeamEditDialog);
+  elements.closeTeamEditButton?.addEventListener("click", closeTeamEditDialog);
+  elements.cancelTeamEditButton?.addEventListener("click", closeTeamEditDialog);
+  elements.teamEditForm?.addEventListener("submit", saveTeamSettings);
+  elements.logoutButton?.addEventListener("click", async () => {
   try {
     await signOut(auth);
     window.location.href = "../login/first.html";
@@ -300,7 +359,9 @@ function createDayButton(date) {
   button.addEventListener("drop", (event) => {
     event.preventDefault();
     button.classList.remove("drag-over");
+    if (elements.dragHint) {
     elements.dragHint.hidden = true;
+    }
 
     const dragData = event.dataTransfer.getData("text/plain");
     if (!dragData) {
@@ -383,6 +444,12 @@ function selectDate(year, month, day) {
   updateGoalDateButton();
 
   elements.scheduleInput.disabled = false;
+  if (elements.notificationDateTime) {
+    elements.notificationDateTime.disabled = false;
+  }
+  if (elements.notificationMembers) {
+    elements.notificationMembers.disabled = false;
+  }
   elements.addScheduleButton.disabled = false;
 
   renderCalendar();
@@ -430,16 +497,43 @@ async function addSchedule() {
         return;
     }
 
+    const notificationInput = elements.notificationDateTime?.value || "";
+    const notificationAt = notificationInput
+      ? new Date(notificationInput).toISOString()
+      : null;
+    const notificationMemberIds = elements.notificationMembers
+      ? Array.from(elements.notificationMembers.selectedOptions)
+        .map((option) => option.value)
+        .filter(Boolean)
+      : [];
+    const notificationMemberNames = notificationMemberIds.reduce((names, memberId) => {
+      const memberName = memberNamesById[memberId];
+      if (memberName) {
+        names[memberId] = memberName;
+      }
+      return names;
+    }, {});
+
     if (!schedules[selectedDate]) {
         schedules[selectedDate] = [];
     }
 
     schedules[selectedDate].push({
       text,
-      completed: false
+      completed: false,
+      notificationAt,
+      notificationMemberIds,
+      notificationMemberNames
     });
 
     elements.scheduleInput.value = "";
+    if (elements.notificationDateTime) {
+      elements.notificationDateTime.value = "";
+    }
+    if (elements.notificationMembers) {
+      elements.notificationMembers.selectedIndex = -1;
+    }
+    await requestNotificationPermission();
 
     renderCalendar();
     renderSchedules();
@@ -504,11 +598,15 @@ function renderSchedules() {
         sourceIndex: index
       }));
       event.dataTransfer.effectAllowed = "move";
-      elements.dragHint.hidden = false;
+      if (elements.dragHint) {
+        elements.dragHint.hidden = false;
+      }
       item.classList.add("dragging");
     });
     item.addEventListener("dragend", () => {
-      elements.dragHint.hidden = true;
+      if (elements.dragHint) {
+        elements.dragHint.hidden = true;
+      }
       item.classList.remove("dragging");
       document.querySelectorAll(".calendar-day.drag-over").forEach((day) => {
         day.classList.remove("drag-over");
@@ -531,6 +629,18 @@ function renderSchedules() {
     const scheduleText = document.createElement("span");
     scheduleText.className = "schedule-text";
     scheduleText.textContent = schedule.text;
+
+    if (schedule.notificationAt && schedule.notificationMemberIds?.length) {
+      const notificationInfo = document.createElement("small");
+      notificationInfo.className = "schedule-notification";
+      const notificationNames = schedule.notificationMemberIds.map((memberId) => (
+        memberNamesById[memberId]
+        || schedule.notificationMemberNames?.[memberId]
+        || "名前未設定"
+      ));
+      notificationInfo.textContent = `通知: ${formatNotificationDate(schedule.notificationAt)} / ${notificationNames.join("、")}`;
+      item.appendChild(notificationInfo);
+    }
 
     const deleteButton = document.createElement("button");
     deleteButton.className = "delete-button";
@@ -579,6 +689,12 @@ async function moveSchedule(sourceDate, sourceIndex, destinationDate) {
   displayMonth = month - 1;
   elements.selectedDateTitle.textContent = `${year}年${month}月${day}日`;
   elements.scheduleInput.disabled = false;
+  if (elements.notificationDateTime) {
+    elements.notificationDateTime.disabled = false;
+  }
+  if (elements.notificationMembers) {
+    elements.notificationMembers.disabled = false;
+  }
   elements.addScheduleButton.disabled = false;
   elements.setGoalDateButton.hidden = false;
   updateGoalDateButton();
@@ -739,7 +855,18 @@ async function loadSchedules(teamCode) {
           schedules[dateKey] = items.map((item) => (
             typeof item === "string"
               ? { text: item, completed: false }
-              : { text: item.text || "", completed: item.completed === true }
+              : {
+                  text: item.text || "",
+                  completed: item.completed === true,
+                  notificationAt: item.notificationAt || null,
+                  notificationMemberIds: Array.isArray(item.notificationMemberIds)
+                    ? item.notificationMemberIds
+                    : [],
+                  notificationMemberNames: item.notificationMemberNames
+                    && typeof item.notificationMemberNames === "object"
+                    ? item.notificationMemberNames
+                    : {}
+                }
           ));
         });
 
@@ -776,6 +903,7 @@ async function loadMembers(teamCode) {
 
         const teamData = teamSnapshot.data();
         return {
+          uid,
           username: teamData.memberNames?.[uid]
             || userData.username
             || "名前未設定",
@@ -797,12 +925,35 @@ async function loadMembers(teamCode) {
 function renderMembers(members) {
   elements.memberCount.textContent = `${members.length}人`;
   elements.memberList.innerHTML = "";
+  Object.keys(memberNamesById).forEach((memberId) => {
+    delete memberNamesById[memberId];
+  });
+  members.forEach((member) => {
+    memberNamesById[member.uid] = member.username;
+  });
+
+  if (selectedDate) {
+    renderSchedules();
+  }
+
+  if (elements.notificationMembers) {
+    elements.notificationMembers.innerHTML = "";
+  }
 
   if (members.length === 0) {
     elements.memberList.innerHTML = `
       <div class="empty-schedule">メンバーがいません。</div>
     `;
     return;
+  }
+
+  if (elements.notificationMembers) {
+    members.forEach((member) => {
+      const option = document.createElement("option");
+      option.value = member.uid;
+      option.textContent = member.username;
+      elements.notificationMembers.appendChild(option);
+    });
   }
 
   const membersWithStatus = members.map((member) => {
@@ -834,6 +985,52 @@ function renderMembers(members) {
   });
 }
 
+function formatNotificationDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "日時不明";
+  }
+
+  return date.toLocaleString("ja-JP", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+async function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+}
+
+function checkBrowserNotifications() {
+  if (!currentUser || !("Notification" in window) || Notification.permission !== "granted") {
+    return;
+  }
+
+  const now = Date.now();
+  Object.entries(schedules).forEach(([dateKey, items]) => {
+    items.forEach((schedule, index) => {
+      const notificationTime = Date.parse(schedule.notificationAt || "");
+      const scheduleKey = `${dateKey}-${index}-${schedule.notificationAt}`;
+      if (
+        !Number.isNaN(notificationTime)
+        && notificationTime <= now
+        && notificationTime > now - 60000
+        && schedule.notificationMemberIds?.includes(currentUser.uid)
+        && !notifiedScheduleKeys.has(scheduleKey)
+      ) {
+        new Notification("予定の通知", { body: schedule.text });
+        notifiedScheduleKeys.add(scheduleKey);
+      }
+    });
+  });
+}
+
+setInterval(checkBrowserNotifications, 15000);
+
 async function updateMyOnlineStatus(user) {
   try {
     await setDoc(
@@ -854,6 +1051,8 @@ onAuthStateChanged(auth, async (user) => {
     }
 
       currentUser = user;
+
+    await registerPushNotifications(user);
 
     console.log("ログイン中のユーザー:", user.uid);
 
@@ -878,11 +1077,15 @@ onAuthStateChanged(auth, async (user) => {
     }
     const userSnapshot = await getDoc(doc(db, "users", user.uid));
     const userData = userSnapshot.data() || {};
-    elements.teamNameInput.value = teamName || currentTeamCode;
-    elements.memberNameInput.value = teamData.memberNames?.[user.uid]
-      || userData.username
-      || "";
-    elements.editTeamButton.hidden = false;
+    if (elements.teamNameInput && elements.memberNameInput) {
+      elements.teamNameInput.value = teamName || currentTeamCode;
+      elements.memberNameInput.value = teamData.memberNames?.[user.uid]
+        || userData.username
+        || "";
+    }
+    if (elements.editTeamButton) {
+      elements.editTeamButton.hidden = false;
+    }
 
     await updateMyOnlineStatus(user);
     await loadSchedules(currentTeamCode);
