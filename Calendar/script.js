@@ -47,6 +47,7 @@ const elements = {
   prevMonthButton: document.getElementById("prevMonthButton"),
   nextMonthButton: document.getElementById("nextMonthButton"),
   todayButton: document.getElementById("todayButton"),
+  dragHint: document.getElementById("dragHint"),
 
   selectedDateTitle: document.getElementById("selectedDateTitle"),
   setGoalDateButton: document.getElementById("setGoalDateButton"),
@@ -238,6 +239,29 @@ function createDayButton(date) {
   const weekday = date.getDay();
   const dateKey = formatDateKey(year, month, day);
 
+  button.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    button.classList.add("drag-over");
+  });
+
+  button.addEventListener("dragleave", () => {
+    button.classList.remove("drag-over");
+  });
+
+  button.addEventListener("drop", (event) => {
+    event.preventDefault();
+    button.classList.remove("drag-over");
+    elements.dragHint.hidden = true;
+
+    const dragData = event.dataTransfer.getData("text/plain");
+    if (!dragData) {
+      return;
+    }
+
+    const { sourceDate, sourceIndex } = JSON.parse(dragData);
+    moveSchedule(sourceDate, Number(sourceIndex), dateKey);
+  });
+
   if (month !== displayMonth) {
     button.classList.add("other-month");
   }
@@ -424,6 +448,24 @@ function renderSchedules() {
   items.forEach((schedule, index) => {
     const item = document.createElement("div");
     item.className = "schedule-item";
+    item.draggable = true;
+    item.addEventListener("dragstart", (event) => {
+      event.dataTransfer.setData("text/plain", JSON.stringify({
+        sourceDate: selectedDate,
+        sourceIndex: index
+      }));
+      event.dataTransfer.effectAllowed = "move";
+      elements.dragHint.hidden = false;
+      item.classList.add("dragging");
+    });
+    item.addEventListener("dragend", () => {
+      elements.dragHint.hidden = true;
+      item.classList.remove("dragging");
+      document.querySelectorAll(".calendar-day.drag-over").forEach((day) => {
+        day.classList.remove("drag-over");
+      });
+    });
+
     if (schedule.completed) {
       item.classList.add("completed");
     }
@@ -456,6 +498,53 @@ function renderSchedules() {
 
     elements.scheduleList.appendChild(item);
   });
+}
+
+async function moveSchedule(sourceDate, sourceIndex, destinationDate) {
+  if (!currentTeamCode) {
+    return;
+  }
+
+  const sourceSchedules = schedules[sourceDate];
+  if (!Array.isArray(sourceSchedules) || !sourceSchedules[sourceIndex]) {
+    return;
+  }
+
+  if (sourceDate === destinationDate) {
+    return;
+  }
+
+  const [schedule] = sourceSchedules.splice(sourceIndex, 1);
+  if (sourceSchedules.length === 0) {
+    delete schedules[sourceDate];
+  }
+
+  if (!schedules[destinationDate]) {
+    schedules[destinationDate] = [];
+  }
+  schedules[destinationDate].push(schedule);
+
+  selectedDate = destinationDate;
+  const [year, month, day] = destinationDate.split("-").map(Number);
+  displayYear = year;
+  displayMonth = month - 1;
+  elements.selectedDateTitle.textContent = `${year}年${month}月${day}日`;
+  elements.scheduleInput.disabled = false;
+  elements.addScheduleButton.disabled = false;
+  elements.setGoalDateButton.hidden = false;
+  updateGoalDateButton();
+  renderCalendar();
+  renderSchedules();
+
+  try {
+    const schedulesRef = doc(db, "teams", currentTeamCode, "schedules", "data");
+    await setDoc(schedulesRef, {
+      ...schedules,
+      ...(targetDate ? { targetDate } : {})
+    });
+  } catch (error) {
+    console.error("予定の日付変更の保存に失敗:", error);
+  }
 }
 
 function updateCompletionRate() {

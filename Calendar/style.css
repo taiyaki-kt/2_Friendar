@@ -138,6 +138,17 @@ button {
   color: var(--saturday);
 }
 
+.drag-hint {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #b9cfee;
+  border-radius: 8px;
+  background: #eef5ff;
+  color: #31598f;
+  font-size: 13px;
+  text-align: center;
+}
+
 .calendar-grid {
   border-left: 1px solid var(--line);
   border-top: 1px solid var(--line);
@@ -155,6 +166,12 @@ button {
 
 .calendar-day:hover {
   background: #f8f9fa;
+}
+
+.calendar-day.drag-over {
+  background: #e8f1ff;
+  outline: 2px dashed var(--saturday);
+  outline-offset: -3px;
 }
 
 .calendar-day.other-month {
@@ -436,6 +453,15 @@ button {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fafbfc;
+  cursor: grab;
+}
+
+.schedule-item:active {
+  cursor: grabbing;
+}
+
+.schedule-item.dragging {
+  opacity: 0.45;
 }
 
 .schedule-checkbox {
