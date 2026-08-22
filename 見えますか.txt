@@ -25,6 +25,8 @@ npm install
 npm run dev
 
 ⑨ ブラウザで開く
-http://localhost:5173/first.html
+http://localhost:5173/login/first.html
+                        ↑フォルダー名を書かないとページに飛べないよ
+                        今までのリンクだと開けないから注意してね
 
 これで開発できる！
