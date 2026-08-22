@@ -33,6 +33,7 @@ const db = getFirestore(app);
 
 console.log("Firebase connected!");
 const elements = {
+  teamNameTitle: document.getElementById("teamNameTitle"),
   monthTitle: document.getElementById("monthTitle"),
   calendarGrid: document.getElementById("calendarGrid"),
   prevMonthButton: document.getElementById("prevMonthButton"),
@@ -88,7 +89,18 @@ async function getMyTeamCode(user) {
         userData
     );
 
-    return userData.teamCode;
+    const requestedTeamCode = new URLSearchParams(window.location.search).get("team");
+    const teamCodes = Array.isArray(userData.teamCodes)
+      ? userData.teamCodes
+      : userData.teamCode
+        ? [userData.teamCode]
+        : [];
+
+    if (requestedTeamCode && teamCodes.includes(requestedTeamCode)) {
+      return requestedTeamCode;
+    }
+
+    return teamCodes[0] || null;
 } 
 elements.prevMonthButton.addEventListener("click", () => {
   displayMonth--;
@@ -651,6 +663,12 @@ onAuthStateChanged(auth, async (user) => {
     currentTeamCode = teamCode;
 
     console.log("所属チーム:", currentTeamCode);
+
+    const teamSnapshot = await getDoc(doc(db, "teams", currentTeamCode));
+    const teamName = teamSnapshot.data()?.name;
+    if (teamName) {
+      elements.teamNameTitle.textContent = teamName;
+    }
 
     await updateMyOnlineStatus(user);
     await loadSchedules(currentTeamCode);

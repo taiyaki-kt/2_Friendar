@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>マイページ</title>
+	<link rel="stylesheet" href="mypage.css">
+</head>
+<body>
+	<main class="mypage">
+		<h1>マイページ</h1>
+		<p><strong id="username">読み込み中…</strong>さんこんにちは</p>
+		<section class="team-section">
+			<div class="team-heading">
+				<h2>チーム</h2>
+				<button id="editTeamButton" class="edit-team-button" type="button">編集</button>
+			</div>
+			<div id="teamList" class="team-list">
+				<p>チームを読み込んでいます。</p>
+			</div>
+			<input id="teamName" class="team-name-input" type="text" placeholder="新しいチーム名">
+			<button id="createTeamButton">チームを作る</button>
+			<div class="join-team-form">
+				<input id="joinTeamCode" type="text" placeholder="参加するチームID">
+				<button id="joinTeamButton">チームに参加</button>
+			</div>
+			<p id="teamMessage" role="status"></p>
+		</section>
+	</main>
+	<script type="module" src="mypage.js"></script>
+</body>
+</html>

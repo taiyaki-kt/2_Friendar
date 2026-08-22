@@ -1,0 +1,142 @@
+body {
+	margin: 0;
+	min-height: 100vh;
+	display: grid;
+	place-items: center;
+	font-family: Arial, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+	color: #202327;
+	background: #f3f5f7;
+}
+
+.mypage {
+	width: min(760px, calc(100% - 32px));
+	padding: 40px;
+	text-align: center;
+	background: #ffffff;
+	border: 1px solid #dce1e6;
+	border-radius: 16px;
+}
+
+.team-section {
+	margin-top: 28px;
+	padding-top: 24px;
+	border-top: 1px solid #dce1e6;
+}
+
+.team-section h2 {
+	margin-top: 0;
+}
+
+.team-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.team-heading h2 {
+	margin-bottom: 0;
+}
+
+.edit-team-button {
+	padding: 7px 12px !important;
+	color: #202327 !important;
+	background: #edf0f2 !important;
+}
+
+.team-section button {
+	padding: 10px 16px;
+	border: 0;
+	border-radius: 8px;
+	color: #ffffff;
+	background: #202327;
+	cursor: pointer;
+}
+
+.team-list {
+	display: grid;
+	gap: 10px;
+	margin: 16px 0;
+	text-align: left;
+	color: #707780;
+}
+
+.team-list > p {
+	margin: 0;
+	text-align: center;
+}
+
+.team-item {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 12px 14px;
+	border: 1px solid #dce1e6;
+	border-radius: 8px;
+	background: #fafbfc;
+}
+
+.team-label {
+	display: grid;
+	gap: 4px;
+}
+
+.team-label small {
+	color: #707780;
+	font-size: 12px;
+}
+
+.team-item .calendar-button {
+	padding: 8px 12px;
+	color: #202327;
+	background: #edf0f2;
+}
+
+.team-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.team-actions .leave-button {
+	padding: 8px 12px;
+	color: #ffffff;
+	background: #b94a4a;
+}
+
+.join-team-form {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+
+.join-team-form input {
+	min-width: 0;
+	padding: 10px 12px;
+	border: 1px solid #dce1e6;
+	border-radius: 8px;
+}
+
+.team-name-input {
+	width: 100%;
+	margin: 8px 0 10px;
+	padding: 10px 12px;
+	border: 1px solid #dce1e6;
+	border-radius: 8px;
+}
+
+.join-team-form button {
+	color: #202327;
+	background: #edf0f2;
+}
+
+.join-team-form button:disabled,
+.team-section button:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+#teamMessage {
+	min-height: 1.5em;
+	color: #707780;
+}
