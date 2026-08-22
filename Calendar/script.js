@@ -34,6 +34,14 @@ const db = getFirestore(app);
 console.log("Firebase connected!");
 const elements = {
   teamNameTitle: document.getElementById("teamNameTitle"),
+  editTeamButton: document.getElementById("editTeamButton"),
+  teamEditDialog: document.getElementById("teamEditDialog"),
+  closeTeamEditButton: document.getElementById("closeTeamEditButton"),
+  cancelTeamEditButton: document.getElementById("cancelTeamEditButton"),
+  teamEditForm: document.getElementById("teamEditForm"),
+  teamNameInput: document.getElementById("teamNameInput"),
+  memberNameInput: document.getElementById("memberNameInput"),
+  teamEditMessage: document.getElementById("teamEditMessage"),
   monthTitle: document.getElementById("monthTitle"),
   calendarGrid: document.getElementById("calendarGrid"),
   prevMonthButton: document.getElementById("prevMonthButton"),
@@ -59,6 +67,7 @@ let displayYear = today.getFullYear();
 let displayMonth = today.getMonth();
 let selectedDate = null;
 let currentTeamCode = null;
+let currentUser = null;
 let targetDate = null;
 const schedules = {};
 const onlineTimeoutMs = 2 * 60 * 1000;
@@ -134,6 +143,58 @@ elements.todayButton.addEventListener("click", () => {
 
 elements.addScheduleButton.addEventListener("click", addSchedule);
 elements.setGoalDateButton.addEventListener("click", toggleGoalDate);
+elements.editTeamButton.addEventListener("click", openTeamEditDialog);
+elements.closeTeamEditButton.addEventListener("click", closeTeamEditDialog);
+elements.cancelTeamEditButton.addEventListener("click", closeTeamEditDialog);
+elements.teamEditForm.addEventListener("submit", saveTeamSettings);
+
+function openTeamEditDialog() {
+  elements.teamEditDialog.hidden = false;
+  elements.teamNameInput.focus();
+}
+
+function closeTeamEditDialog() {
+  elements.teamEditDialog.hidden = true;
+  elements.teamEditMessage.textContent = "";
+}
+
+async function saveTeamSettings(event) {
+  event.preventDefault();
+
+  const teamName = elements.teamNameInput.value.trim();
+  const memberName = elements.memberNameInput.value.trim();
+  if (!currentUser || !currentTeamCode || !teamName || !memberName) {
+    elements.teamEditMessage.textContent = "チーム名と名前を入力してください。";
+    return;
+  }
+
+  const saveButton = elements.teamEditForm.querySelector(".primary-button");
+  saveButton.disabled = true;
+  elements.teamEditMessage.textContent = "保存しています...";
+
+  try {
+    const teamReference = doc(db, "teams", currentTeamCode);
+    const teamSnapshot = await getDoc(teamReference);
+    const currentMemberNames = teamSnapshot.data()?.memberNames || {};
+
+    await setDoc(teamReference, {
+      name: teamName,
+      memberNames: {
+        ...currentMemberNames,
+        [currentUser.uid]: memberName
+      }
+    }, { merge: true });
+
+    elements.teamNameTitle.textContent = teamName;
+    await loadMembers(currentTeamCode);
+    elements.teamEditMessage.textContent = "保存しました。チームメンバーにも表示されます。";
+  } catch (error) {
+    console.error("チーム情報の保存に失敗:", error);
+    elements.teamEditMessage.textContent = `保存に失敗しました（${error.code || "不明なエラー"}）。`;
+  } finally {
+    saveButton.disabled = false;
+  }
+}
 
 elements.scheduleInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
@@ -575,8 +636,11 @@ async function loadMembers(teamCode) {
         const userSnapshot = await getDoc(doc(db, "users", uid));
         const userData = userSnapshot.exists() ? userSnapshot.data() : {};
 
+        const teamData = teamSnapshot.data();
         return {
-          username: userData.username || "名前未設定",
+          username: teamData.memberNames?.[uid]
+            || userData.username
+            || "名前未設定",
           email: userData.email || "",
           lastActiveAt: userData.lastActiveAt || null
         };
@@ -651,6 +715,8 @@ onAuthStateChanged(auth, async (user) => {
         return;
     }
 
+      currentUser = user;
+
     console.log("ログイン中のユーザー:", user.uid);
 
     const teamCode = await getMyTeamCode(user);
@@ -665,10 +731,18 @@ onAuthStateChanged(auth, async (user) => {
     console.log("所属チーム:", currentTeamCode);
 
     const teamSnapshot = await getDoc(doc(db, "teams", currentTeamCode));
-    const teamName = teamSnapshot.data()?.name;
+    const teamData = teamSnapshot.data() || {};
+    const teamName = teamData.name;
     if (teamName) {
       elements.teamNameTitle.textContent = teamName;
     }
+    const userSnapshot = await getDoc(doc(db, "users", user.uid));
+    const userData = userSnapshot.data() || {};
+    elements.teamNameInput.value = teamName || currentTeamCode;
+    elements.memberNameInput.value = teamData.memberNames?.[user.uid]
+      || userData.username
+      || "";
+    elements.editTeamButton.hidden = false;
 
     await updateMyOnlineStatus(user);
     await loadSchedules(currentTeamCode);

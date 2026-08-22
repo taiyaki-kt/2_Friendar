@@ -9,7 +9,10 @@
 
 <body>
   <header class="site-header">
-    <h1 id="teamNameTitle">Calendar App</h1>
+    <div class="header-title-row">
+      <h1 id="teamNameTitle">Calendar App</h1>
+      <button id="editTeamButton" class="secondary-button" type="button" hidden>編集</button>
+    </div>
     <h2>チームID　<span id="teamCodeDayo">
       teamCode
     </span></h2>
@@ -45,6 +48,29 @@
         <button id="todayButton" class="secondary-button">今日に戻る</button>
       </div>
     </section>
+
+    <div id="teamEditDialog" class="dialog-backdrop" hidden>
+      <section class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="teamEditTitle">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">TEAM SETTINGS</p>
+            <h2 id="teamEditTitle">チーム情報を編集</h2>
+          </div>
+          <button id="closeTeamEditButton" class="icon-button" type="button" aria-label="閉じる">×</button>
+        </div>
+        <form id="teamEditForm" class="edit-form">
+          <label for="teamNameInput">チーム名</label>
+          <input id="teamNameInput" type="text" maxlength="50" required>
+          <label for="memberNameInput">自分のチーム内での名前</label>
+          <input id="memberNameInput" type="text" maxlength="30" required>
+          <p id="teamEditMessage" class="dialog-message" role="status"></p>
+          <div class="dialog-actions">
+            <button id="cancelTeamEditButton" class="secondary-button" type="button">キャンセル</button>
+            <button class="primary-button" type="submit">保存</button>
+          </div>
+        </form>
+      </section>
+    </div>
 
     <section class="card schedule-card">
       <div class="section-heading">
