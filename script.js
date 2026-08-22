@@ -591,7 +591,19 @@ function renderMembers(members) {
     return;
   }
 
-  members.forEach((member) => {
+  const membersWithStatus = members.map((member) => {
+    const lastActiveTime = member.lastActiveAt?.toMillis?.() || 0;
+    return {
+      member,
+      isOnline: Date.now() - lastActiveTime < onlineTimeoutMs
+    };
+  });
+
+  membersWithStatus.sort((first, second) => (
+    Number(second.isOnline) - Number(first.isOnline)
+  ));
+
+  membersWithStatus.forEach(({ member, isOnline }) => {
     const item = document.createElement("div");
     item.className = "member-item";
 
@@ -600,8 +612,6 @@ function renderMembers(members) {
     item.appendChild(name);
 
     const status = document.createElement("span");
-    const lastActiveTime = member.lastActiveAt?.toMillis?.() || 0;
-    const isOnline = Date.now() - lastActiveTime < onlineTimeoutMs;
     status.className = `member-status ${isOnline ? "online" : "offline"}`;
     status.textContent = isOnline ? "オンライン" : "オフライン";
     item.appendChild(status);
