@@ -527,9 +527,18 @@ button {
 
 .schedule-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 170px) minmax(0, 180px) auto;
+  grid-template-columns: 1fr auto;
   gap: 10px;
   margin-top: 20px;
+}
+
+.schedule-form #scheduleInput {
+  grid-column: 1 / -1;
+}
+
+.schedule-form .schedule-option {
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 .schedule-form input,
@@ -554,11 +563,13 @@ button {
 
 .schedule-option {
   min-width: 0;
-  display: grid;
-  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
   color: var(--muted);
   font-size: 12px;
   font-weight: bold;
+  line-height: 1;
 }
 
 .schedule-option select {
@@ -722,6 +733,10 @@ button {
 @media (max-width: 850px) {
   .app {
     grid-template-columns: 1fr;
+  }
+
+  .schedule-form {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

@@ -279,3 +279,21 @@ createTeamButton.addEventListener("click", async () => {
 		createTeamButton.disabled = false;
 	}
 });
+
+// メニューボタンのイベントリスナー
+const calendarMenuButton = document.getElementById("calendarButton");
+const logoutMenuButton = document.getElementById("logoutButton");
+
+calendarMenuButton?.addEventListener("click", () => {
+	window.location.href = "../Calendar/calendar.html";
+});
+
+logoutMenuButton?.addEventListener("click", async () => {
+	try {
+		const { signOut } = await import("firebase/auth");
+		await signOut(auth);
+		window.location.href = "../login/first.html";
+	} catch (error) {
+		console.error("ログアウトに失敗:", error);
+	}
+});

@@ -40,7 +40,6 @@ const elements = {
   teamNameTitle: document.getElementById("teamNameTitle"),
   editTeamButton: document.getElementById("editTeamButton"),
   teamEditDialog: document.getElementById("teamEditDialog"),
-  closeTeamEditButton: document.getElementById("closeTeamEditButton"),
   cancelTeamEditButton: document.getElementById("cancelTeamEditButton"),
   teamEditForm: document.getElementById("teamEditForm"),
   teamNameInput: document.getElementById("teamNameInput"),
@@ -53,6 +52,7 @@ const elements = {
   todayButton: document.getElementById("todayButton"),
   dragHint: document.getElementById("dragHint"),
   calendarMenuList: document.getElementById("calendarMenuList"),
+  myPageButton: document.getElementById("myPageButton"),
   logoutButton: document.getElementById("logoutButton"),
 
   selectedDateTitle: document.getElementById("selectedDateTitle"),
@@ -245,9 +245,11 @@ elements.todayButton.addEventListener("click", () => {
 elements.addScheduleButton.addEventListener("click", addSchedule);
 elements.setGoalDateButton.addEventListener("click", toggleGoalDate);
   elements.editTeamButton?.addEventListener("click", openTeamEditDialog);
-  elements.closeTeamEditButton?.addEventListener("click", closeTeamEditDialog);
   elements.cancelTeamEditButton?.addEventListener("click", closeTeamEditDialog);
   elements.teamEditForm?.addEventListener("submit", saveTeamSettings);
+  elements.myPageButton?.addEventListener("click", () => {
+    window.location.href = "../mypage/mypage.html";
+  });
   elements.logoutButton?.addEventListener("click", async () => {
   try {
     await signOut(auth);
